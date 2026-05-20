@@ -1,8 +1,12 @@
-"""Thin wandb wrapper with graceful offline fallback.
+"""Thin wandb wrapper with graceful no-tracking fallback.
 
-If `WANDB_API_KEY` is not set, runs in `offline` mode (data persisted under
-`./wandb/` for later sync). `log()` and `finish()` are no-ops if no run is
-active.
+If neither ``WANDB_API_KEY`` nor ``WANDB_MODE`` is set we default to
+``WANDB_MODE=disabled`` so wandb is a strict no-op. Offline mode is opt-in
+via ``WANDB_MODE=offline`` — it can hang under long sweeps on some wandb
+versions, and the JSONL/Parquet outputs are already authoritative.
+
+``log()`` and ``finish()`` are no-ops if no run is active or wandb isn't
+installed.
 """
 
 from __future__ import annotations
@@ -24,7 +28,7 @@ def init_run(project: str, config: dict[str, Any] | None = None, name: str | Non
     if not _HAVE_WANDB:
         return None
     if "WANDB_API_KEY" not in os.environ and "WANDB_MODE" not in os.environ:
-        os.environ["WANDB_MODE"] = "offline"
+        os.environ["WANDB_MODE"] = "disabled"
     _RUN = wandb.init(project=project, config=config or {}, name=name, reinit=True)
     return _RUN
 
