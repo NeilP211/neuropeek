@@ -29,4 +29,5 @@ bench:
 	uv run python scripts/bench_kernel.py
 
 clean:
-	rm -rf .pytest_cache .ruff_cache **/__pycache__ build dist *.egg-info
+	rm -rf .pytest_cache .ruff_cache build dist *.egg-info
+	find . -type d -name __pycache__ -exec rm -rf {} +

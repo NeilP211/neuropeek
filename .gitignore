@@ -54,6 +54,7 @@ Thumbs.db
 
 # Project-specific
 data/
+!data/.gitkeep
 results/
 !results/.gitkeep
 *.parquet
