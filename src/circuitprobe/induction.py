@@ -107,6 +107,10 @@ def copying_score(model: HookedTransformer) -> torch.Tensor:
     no data required.
 
     Returns: (n_layers, n_heads) tensor on CPU.
+
+    Implementation note: we never materialise the full (vocab, vocab) product
+    (50_304^2 * 4 B = ~9.6 GiB for Pythia). Instead we compute the diagonal
+    elementwise via diag[i] = sum_j (W_E @ W_OV)[i, j] * W_U[j, i].
     """
     n_layers = model.cfg.n_layers
     n_heads = model.cfg.n_heads
@@ -114,14 +118,15 @@ def copying_score(model: HookedTransformer) -> torch.Tensor:
 
     W_E = model.W_E  # (vocab, d_model)
     W_U = model.W_U  # (d_model, vocab)
+    W_U_T = W_U.T.contiguous()  # (vocab, d_model)
 
     for layer in range(n_layers):
         W_V = model.W_V[layer]  # (n_heads, d_model, d_head)
         W_O = model.W_O[layer]  # (n_heads, d_head, d_model)
         for head in range(n_heads):
             W_OV = W_V[head] @ W_O[head]  # (d_model, d_model)
-            full = W_E @ W_OV @ W_U  # (vocab, vocab)
-            diag = full.diag()
+            EW = W_E @ W_OV  # (vocab, d_model)
+            diag = (EW * W_U_T).sum(dim=1)  # (vocab,)
             scores[layer, head] = (diag > 0).float().mean().cpu()
 
     return scores
