@@ -1,7 +1,5 @@
 """Tests for Pythia checkpoint enumeration."""
 
-import pytest
-
 from circuitprobe import checkpoints
 
 
@@ -29,7 +27,7 @@ def test_select_emergence_steps_log_spaced():
     selected = checkpoints.select_emergence_steps(n=8)
     # Excluding the first (0), gaps should grow.
     gaps = [selected[i + 1] - selected[i] for i in range(1, len(selected) - 1)]
-    assert all(g2 >= g1 for g1, g2 in zip(gaps[:-1], gaps[1:])), gaps
+    assert all(g2 >= g1 for g1, g2 in zip(gaps[:-1], gaps[1:], strict=True)), gaps
 
 
 def test_revision_for_step_formats_correctly():

@@ -15,7 +15,6 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-
 # Log-spaced early checkpoints published by EleutherAI for Pythia.
 # Source: https://huggingface.co/EleutherAI/pythia-160m (Branches tab).
 _PYTHIA_EARLY_STEPS: list[int] = [
