@@ -37,7 +37,30 @@ To map the emergence boundary I swept 3 model sizes × 12 log-spaced training ch
 
 ![Emergence heatmap](figures/emergence_heatmap.png)
 
-The headline pattern: <TBF: 2-3 sentence qualitative description of the grid — does emergence happen earlier (in steps) for bigger models, later, or at a consistent compute-equivalent step?>
+### Pythia-160M cross-section
+
+Looking at a single size, the phase transition is dramatic:
+
+| Training step | max prefix-match | Notes |
+|---:|---:|---|
+| 0 | 0.015 | Random init — no structure |
+| 1 | 0.015 | |
+| 4 | 0.015 | |
+| 8 | 0.015 | |
+| 32 | 0.018 | |
+| 128 | 0.015 | |
+| 256 | 0.015 | Still no induction |
+| **1000** | **0.915** | **Sharp emergence** |
+| 4000 | 0.978 | Mature |
+| 13000 | 0.984 | |
+| 44000 | 0.979 | |
+| 143000 | 0.985 | Final ckpt; L4H6 |
+
+The transition happens entirely between training steps 256 and 1000 — at step 256 the model has no induction structure (max prefix-match indistinguishable from random); at step 1000 the canonical induction head L4H6 is already firing at 0.915 prefix-match. The final-checkpoint value (0.985) matches the L4H6 score I identified independently in the P3 stand-alone identification (`results/pythia_160m_heads.json`).
+
+### Across scales
+
+<TBF: 2-3 sentence qualitative description of the (scale × step) grid once 410M and 1.4B cells are in — does emergence happen earlier (in steps) for bigger models, later, or at a consistent compute-equivalent step?>
 
 ## Scaling law
 
