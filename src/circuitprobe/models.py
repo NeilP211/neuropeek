@@ -1,8 +1,8 @@
 """TransformerLens model loaders for Pythia and GPT-2-small.
 
-Pythia checkpoints are loaded via the `checkpoint_index` argument to
-`HookedTransformer.from_pretrained`. We allow specifying a numeric step
-(matching `revision="step{N}"` on HuggingFace) for emergence-grid sweeps.
+Pythia checkpoints are loaded by passing ``revision="step{N}"`` to
+``HookedTransformer.from_pretrained``, pinning the HuggingFace branch
+that corresponds to training step ``N``. Used for the emergence-grid sweep.
 """
 
 from __future__ import annotations
@@ -58,4 +58,6 @@ def load_pythia(
 
 
 def load_gpt2_small(device: str | torch.device = "cpu") -> HookedTransformer:
-    return HookedTransformer.from_pretrained("gpt2", device=str(device))
+    model = HookedTransformer.from_pretrained("gpt2", device=str(device))
+    model.eval()
+    return model
