@@ -40,3 +40,9 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/circuitprobe"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: requires network or model download",
+    "gpu: requires CUDA GPU",
+]
