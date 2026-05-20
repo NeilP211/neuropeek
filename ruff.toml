@@ -7,4 +7,5 @@ ignore = ["E501"]
 
 [lint.per-file-ignores]
 "tests/*" = ["E402"]
-"notebooks/*" = ["E402", "F401"]
+"notebooks/*" = ["E402", "F401", "I001", "SIM115"]
+"*.ipynb" = ["E402", "F401", "I001", "SIM115"]
