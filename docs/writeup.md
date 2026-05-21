@@ -37,30 +37,30 @@ To map the emergence boundary I swept 3 model sizes × 12 log-spaced training ch
 
 ![Emergence heatmap](figures/emergence_heatmap.png)
 
-### Pythia-160M cross-section
+### Per-size cross-sections
 
-Looking at a single size, the phase transition is dramatic:
+The phase transition for each size:
 
-| Training step | max prefix-match | Notes |
-|---:|---:|---|
-| 0 | 0.015 | Random init — no structure |
-| 1 | 0.015 | |
-| 4 | 0.015 | |
-| 8 | 0.015 | |
-| 32 | 0.018 | |
-| 128 | 0.015 | |
-| 256 | 0.015 | Still no induction |
-| **1000** | **0.915** | **Sharp emergence** |
-| 4000 | 0.978 | Mature |
-| 13000 | 0.984 | |
-| 44000 | 0.979 | |
-| 143000 | 0.985 | Final ckpt; L4H6 |
+| Training step | Pythia-160M max_pm | Pythia-410M max_pm |
+|---:|---:|---:|
+| 0 | 0.015 | 0.017 |
+| 1 | 0.015 | 0.017 |
+| 4 | 0.015 | 0.017 |
+| 8 | 0.015 | 0.017 |
+| 32 | 0.018 | 0.021 |
+| 128 | 0.015 | 0.015 |
+| 256 | 0.015 | 0.017 |
+| **1000** | **0.915** | **0.913** |
+| 4000 | 0.978 | 0.965 |
+| 13000 | 0.984 | 0.986 |
+| 44000 | 0.979 | 0.987 |
+| 143000 | 0.985 | 0.968 |
 
-The transition happens entirely between training steps 256 and 1000 — at step 256 the model has no induction structure (max prefix-match indistinguishable from random); at step 1000 the canonical induction head L4H6 is already firing at 0.915 prefix-match. The final-checkpoint value (0.985) matches the L4H6 score I identified independently in the P3 stand-alone identification (`results/pythia_160m_heads.json`).
+Both 160M and 410M flip from "no induction structure" (max prefix-match ≈ 0.02) to "the canonical induction head firing at >0.9" entirely within the window step 256 → step 1000. The two sizes track each other almost cell-for-cell, with within-noise differences. The final-step 160M score (0.985) matches the L4H6 score derived independently in P3 — internal consistency holds.
 
-### Across scales
+### Across scales (with 1.4B)
 
-<TBF: 2-3 sentence qualitative description of the (scale × step) grid once 410M and 1.4B cells are in — does emergence happen earlier (in steps) for bigger models, later, or at a consistent compute-equivalent step?>
+<TBF: 2-3 sentence qualitative description once the 1.4B cells finish — does the transition window shift for the larger model, or does it stay at step 256→1000?>
 
 ## Scaling law
 
