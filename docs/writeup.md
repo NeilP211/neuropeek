@@ -1,6 +1,6 @@
 # CircuitProbe — Reproducing induction heads on Pythia and mapping their emergence across scale and training compute
 
-**TL;DR.** I reproduced the induction-head identification from Olsson et al. (2022, *"In-context Learning and Induction Heads"*) on Pythia 160M / 410M / 1.4B using TransformerLens, then leveraged Pythia's public training checkpoints to build the full `(model scale × training step)` emergence grid — 3 sizes × 12 checkpoints. **Headline finding: induction-head emergence is scale-invariant in training-step terms.** All three sizes flip from "no induction structure" (max prefix-match ≈ 0.02) to "the canonical induction head firing" (max prefix-match > 0.9) inside the same training-step window — step 256 → step 1000 — and the prefix-match values at step 1000 cluster tightly: **160M 0.915, 410M 0.913, 1.4B 0.908.** The scaling-law exponent over emergence step vs model parameters is ≈ 0, with the 95% bootstrap CI covering zero. I also shipped a Triton kernel for fused prefix-matching score extraction, targeting <TBF: speedup> over PyTorch eager on a T4.
+**TL;DR.** I reproduced the induction-head identification from Olsson et al. (2022, *"In-context Learning and Induction Heads"*) on Pythia 160M / 410M / 1.4B using TransformerLens, then leveraged Pythia's public training checkpoints to build the full `(model scale × training step)` emergence grid — 3 sizes × 12 checkpoints. **Headline finding: induction-head emergence is scale-invariant in training-step terms.** All three sizes flip from "no induction structure" (max prefix-match ≈ 0.02) to "the canonical induction head firing" (max prefix-match > 0.9) inside the same training-step window — step 256 → step 1000 — and the prefix-match values at step 1000 cluster tightly: **160M 0.915, 410M 0.913, 1.4B 0.908.** The scaling-law exponent over emergence step vs model parameters is **b ≈ 0** to machine precision, 95% bootstrap CI `[−8.4 × 10⁻¹⁶, +1.9 × 10⁻¹⁵]`. I also shipped a Triton kernel for fused prefix-matching score extraction (CUDA-only; benchmark on Colab T4 in `notebooks/03_kernel_benchmark.ipynb`, target band 1.5–3× over PyTorch eager).
 
 ## Background
 
@@ -103,7 +103,7 @@ What could complicate this picture: (a) we used only one threshold for emergence
 The hot inner loop of induction-head scoring is "gather pattern[b, h, q, q-N+1] for each q in the second half, then mean". PyTorch eager performs this as advanced indexing (a copy) plus a mean (another pass over the gathered tensor). I wrote a single Triton kernel that fuses the gather + accumulate + mean per (batch, head) program, eliminating the intermediate tensor:
 
 - Correctness: max error vs PyTorch eager < 1e-3 (fp16 input, fp32 accumulator).
-- Speedup on Colab T4: <TBF>× median across (B, H, S) ∈ {(16, 12, 128), (8, 16, 256), (4, 32, 512)} shapes.
+- Speedup on Colab T4: deferred (this Mac has no CUDA — open `notebooks/03_kernel_benchmark.ipynb` in Colab T4 to fill in the median speedup across `(B, H, S) ∈ {(16, 12, 128), (8, 16, 256), (4, 32, 512)}` shapes). Target band 1.5–3×.
 
 (Code: `src/circuitprobe/kernels/prefix_match_triton.py`. Benchmark: `scripts/bench_kernel.py`, runnable end-to-end via `notebooks/03_kernel_benchmark.ipynb`.)
 
