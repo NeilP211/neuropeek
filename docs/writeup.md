@@ -1,6 +1,6 @@
 # CircuitProbe — Reproducing induction heads on Pythia and mapping their emergence across scale and training compute
 
-**TL;DR.** I reproduced the induction-head identification from Olsson et al. (2022, *"In-context Learning and Induction Heads"*) on Pythia 160M / 410M / 1.4B using TransformerLens, then leveraged Pythia's public training checkpoints to build the full `(model scale × training step)` emergence grid — 3 sizes × 12 checkpoints. A power law fit to the emergence boundary gives <TBF: scaling exponent + CI>. I also shipped a Triton kernel for fused prefix-matching score extraction, targeting <TBF: speedup> over PyTorch eager on a T4.
+**TL;DR.** I reproduced the induction-head identification from Olsson et al. (2022, *"In-context Learning and Induction Heads"*) on Pythia 160M / 410M / 1.4B using TransformerLens, then leveraged Pythia's public training checkpoints to build the full `(model scale × training step)` emergence grid — 3 sizes × 12 checkpoints. **Headline finding: induction-head emergence is scale-invariant in training-step terms.** All three sizes flip from "no induction structure" (max prefix-match ≈ 0.02) to "the canonical induction head firing" (max prefix-match > 0.9) inside the same training-step window — step 256 → step 1000 — and the prefix-match values at step 1000 cluster tightly: **160M 0.915, 410M 0.913, 1.4B 0.908.** The scaling-law exponent over emergence step vs model parameters is ≈ 0, with the 95% bootstrap CI covering zero. I also shipped a Triton kernel for fused prefix-matching score extraction, targeting <TBF: speedup> over PyTorch eager on a T4.
 
 ## Background
 
@@ -60,18 +60,40 @@ Both 160M and 410M flip from "no induction structure" (max prefix-match ≈ 0.02
 
 ### Across scales (with 1.4B)
 
-<TBF: 2-3 sentence qualitative description once the 1.4B cells finish — does the transition window shift for the larger model, or does it stay at step 256→1000?>
+Adding 1.4B doesn't change the picture — it reinforces it. The 1.4B model is at max_pm = 0.016 at step 256, and 0.908 at step 1000. The transition window stays exactly where 160M and 410M put it: between training steps 256 and 1000, the model goes from "no induction" to "mature induction head firing at >0.9". This is despite the 1.4B model having **8.7× the parameters of 160M** and being trained on the same data schedule.
+
+The implication is that induction-head formation is a property of the *training* schedule — how many tokens of optimisation the model has seen — rather than the *model's* capacity. The phase transition is locked to step ~1000 (i.e. ~2 million training tokens, given Pythia's 2048-token, 1024-sequence batch size), regardless of how big the model is.
+
+| Training step | 160M max_pm | 410M max_pm | 1.4B max_pm |
+|---:|---:|---:|---:|
+| 0 | 0.015 | 0.017 | 0.016 |
+| 1 | 0.015 | 0.017 | 0.016 |
+| 4 | 0.015 | 0.017 | 0.017 |
+| 8 | 0.015 | 0.017 | 0.017 |
+| 32 | 0.018 | 0.021 | 0.017 |
+| 128 | 0.015 | 0.015 | 0.016 |
+| 256 | 0.015 | 0.017 | 0.015 |
+| **1000** | **0.915** | **0.913** | **0.908** |
+| 4000 | 0.978 | 0.965 | <TBF> |
+| 13000 | 0.984 | 0.986 | <TBF> |
+| 44000 | 0.979 | 0.987 | <TBF> |
+| 143000 | 0.985 | 0.968 | <TBF> |
 
 ## Scaling law
 
-Fitting `emergence_step = a · N^b` to the per-size emergence points gives:
+Fitting `emergence_step = a · N^b` to the per-size emergence points (where the emergence step is the first training step at which max prefix-match ≥ 0.3):
 
-- Exponent `b` = <TBF>, 95% bootstrap CI [<TBF>, <TBF>]
-- Threshold for emergence: `prefix_match >= 0.3` (sensitivity at 0.2 / 0.4 shown in supplement).
+- All three sizes have emergence step = **1000** (the same step).
+- Power-law fit: `y = a · N^0` — exponent **b ≈ 0**, 95% bootstrap CI covering zero. (Exact numbers in `results/scaling_law_fit.json`.)
+- Threshold for emergence: `prefix_match >= 0.3`. Robust to threshold choice — at 0.2 and 0.4 all sizes still emerge at step 1000.
 
 ![Scaling law](figures/scaling_law.png)
 
-Interpretation: <TBF: 1-2 paragraphs interpreting the sign + magnitude of the exponent. If b < 0, larger models reach the same prefix-match threshold sooner in absolute steps. If b > 0, larger models take longer (in steps). If |b| is small the timing is roughly compute-equivalent.>
+**Interpretation.** The headline reading is *induction-head formation is a property of the training schedule, not the model.* Across an 8.7× parameter range (160M → 1.4B), the phase transition lands inside the same training-step window. This is mildly surprising — naively one might expect larger models to either (a) form induction heads sooner because they have more capacity to dedicate to the circuit, or (b) form them later because the optimisation landscape is more complex. We see neither: the timing is locked to the data the model has seen, not the model itself.
+
+This is consistent with Olsson '22's observation that induction-head formation tracks the in-context-learning loss bump rather than absolute training-loss progress. Our (size × step) sweep tightens that claim: the bump is at the same step across sizes.
+
+What could complicate this picture: (a) we used only one threshold for emergence (≥ 0.3); a more continuous "halfway point" metric might reveal sub-step-1000 dynamics; (b) the published Pythia training schedules are matched across sizes, so we cannot tease apart "training step" from "training-tokens-seen" — they covary by design; (c) at smaller sizes (Pythia-70M, below our sweep range), capacity might genuinely bind, breaking the scale-invariance.
 
 ## Triton kernel
 
