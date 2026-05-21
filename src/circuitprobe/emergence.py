@@ -97,17 +97,21 @@ def run_cell(
     from . import checkpoints as _ckpt
     revision = _ckpt.revision_for_step(step) if step is not None else None
 
-    model = models.load_pythia(size=size, step=step, device=device)
+    model = None
     try:
+        model = models.load_pythia(size=size, step=step, device=device)
         scores = induction.prefix_match_score(
             model, n_seqs=n_seqs, half_len=half_len, seed=seed
         )
     finally:
-        del model
+        if model is not None:
+            del model
         gc.collect()
         if torch.cuda.is_available():
             torch.cuda.empty_cache()
         if cleanup_after_cell:
+            # Clean even when load_pythia itself failed mid-download —
+            # otherwise partial blobs accumulate and exhaust disk.
             _cleanup_revision_snapshots(size, revision)
 
     mx, mn, top = summarise_scores(scores, top_k=top_k)
