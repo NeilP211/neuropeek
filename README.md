@@ -5,10 +5,17 @@ induction heads (Olsson et al., 2022) on Pythia, then mapping their
 emergence across the **(model scale × training step)** grid using Pythia's
 public training checkpoints.
 
-> **Status:** code-complete, headline grid sweep in progress.
+> **Status:** ✅ complete. Headline: induction-head emergence is
+> **scale-invariant in training-step terms** — all three Pythia sizes
+> (160M / 410M / 1.4B) cross the `max prefix-match ≥ 0.3` threshold at
+> training step 1000.
 > Spec: [`docs/superpowers/specs/2026-05-20-circuitprobe-design.md`](docs/superpowers/specs/2026-05-20-circuitprobe-design.md).
 > Plan: [`docs/superpowers/plans/2026-05-20-circuitprobe.md`](docs/superpowers/plans/2026-05-20-circuitprobe.md).
 > Writeup: [`docs/writeup.md`](docs/writeup.md).
+
+![Induction-head emergence map](results/figures/emergence_heatmap.png)
+
+*All three model sizes flip from no-induction (dark) to mature-induction (yellow) inside the same training-step window — between step 256 and step 1000.*
 
 ---
 
@@ -25,7 +32,10 @@ qualitatively reproduced.
 checkpoints across its full training run. CircuitProbe sweeps a 3-size ×
 12-checkpoint emergence grid (36 cells), with per-cell prefix-match scoring
 plus cache-cleanup-between-cells (peak disk ~6 GB instead of ~70 GB).
-A power law is fit to the emergence boundary with bootstrap 95% CIs.
+A power law fit to the emergence step vs model parameters gives exponent
+**b ≈ 0** (machine-precision zero) with 95% bootstrap CI covering zero —
+induction-head emergence is locked to the *training schedule*, not the
+*model's capacity*, across 8.7× in parameter count.
 
 **Custom kernel.** A single Triton kernel fuses gather + mean-reduce along
 the prefix-match diagonal in the attention pattern tensor — the hot inner

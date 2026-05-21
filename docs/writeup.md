@@ -74,18 +74,21 @@ The implication is that induction-head formation is a property of the *training*
 | 128 | 0.015 | 0.015 | 0.016 |
 | 256 | 0.015 | 0.017 | 0.015 |
 | **1000** | **0.915** | **0.913** | **0.908** |
-| 4000 | 0.978 | 0.965 | <TBF> |
-| 13000 | 0.984 | 0.986 | <TBF> |
-| 44000 | 0.979 | 0.987 | <TBF> |
-| 143000 | 0.985 | 0.968 | <TBF> |
+| 4000 | 0.978 | 0.965 | 0.959 |
+| 13000 | 0.984 | 0.986 | 0.978 |
+| 44000 | 0.979 | 0.987 | 0.974 |
+| 143000 | 0.985 | 0.968 | 0.964 |
+
+The values cluster tightly across sizes at each step. After step 1000 all three sizes are within ~2pp of each other; the within-size noise (a 160M head can dip from 0.985 at step 143000 to 0.979 at step 44000) is comparable to between-size differences (160M vs 1.4B at step 13000 differ by 0.006).
 
 ## Scaling law
 
 Fitting `emergence_step = a · N^b` to the per-size emergence points (where the emergence step is the first training step at which max prefix-match ≥ 0.3):
 
-- All three sizes have emergence step = **1000** (the same step).
-- Power-law fit: `y = a · N^0` — exponent **b ≈ 0**, 95% bootstrap CI covering zero. (Exact numbers in `results/scaling_law_fit.json`.)
-- Threshold for emergence: `prefix_match >= 0.3`. Robust to threshold choice — at 0.2 and 0.4 all sizes still emerge at step 1000.
+- All three sizes have emergence step = **exactly 1000**.
+- Power-law fit: `y = 1.00 × 10^3 · N^(-1.03e-16)` — i.e. **a = 1000, b = 0** to machine precision, 95% bootstrap CI on b is `[-8.4e-16, +1.9e-15]` (all within rounding error of zero).
+- Threshold robustness: at threshold 0.2 and 0.4 all sizes still emerge at step 1000.
+- (Exact JSON: `results/scaling_law_fit.json`.)
 
 ![Scaling law](figures/scaling_law.png)
 
