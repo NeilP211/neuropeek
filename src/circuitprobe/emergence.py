@@ -48,9 +48,14 @@ def summarise_scores(
 
 
 def _hf_cache_dir_for(size: str) -> Path:
-    """Return the HF hub cache directory for a Pythia size."""
+    """Return the HF hub cache directory for a Pythia size.
+
+    HF's cache dir name mirrors the HF repo id with ``/`` swapped for ``--``
+    and keeps periods literally — e.g. ``EleutherAI/pythia-1.4b`` lives at
+    ``models--EleutherAI--pythia-1.4b``. We only lowercase the size suffix.
+    """
     home = Path.home() / ".cache" / "huggingface" / "hub"
-    return home / f"models--EleutherAI--pythia-{size.lower().replace('.', '_')}"
+    return home / f"models--EleutherAI--pythia-{size.lower()}"
 
 
 def _cleanup_revision_snapshots(size: str, revision: str | None) -> None:
