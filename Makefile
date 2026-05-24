@@ -1,4 +1,4 @@
-.PHONY: help install test lint format reproduce bench clean
+.PHONY: help install test lint format reproduce bench demo clean
 
 help:
 	@echo "Targets:"
@@ -8,10 +8,14 @@ help:
 	@echo "  format    - ruff format"
 	@echo "  reproduce - regenerate headline figures from cached results"
 	@echo "  bench     - run Triton kernel benchmark (requires CUDA)"
+	@echo "  demo      - launch the interactive Gradio demo (loads Pythia-160M)"
 	@echo "  clean     - remove caches"
 
 install:
 	uv sync --extra dev
+
+demo:
+	uv run --extra demo python app/demo.py
 
 test:
 	uv run pytest -q

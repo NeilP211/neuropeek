@@ -42,3 +42,28 @@ def induction_head_attention_html(
     tokens = [model.to_string(t) for t in seqs[0]]
     html = cv.attention.attention_pattern(tokens=tokens, attention=pat.cpu())
     return str(html)
+
+
+@torch.no_grad()
+def text_attention_html(
+    model: HookedTransformer,
+    text: str,
+    layer: int,
+    head: int,
+    prepend_bos: bool = True,
+) -> str:
+    """Return a CircuitsVis attention-pattern snippet for arbitrary input text.
+
+    Renders how the given (layer, head) attends across the tokens of `text`.
+    On text with a repeated phrase, an induction head shows a visible stripe
+    of attention from the second occurrence back to the token that followed
+    the first occurrence.
+    """
+    tokens = model.to_tokens(text, prepend_bos=prepend_bos)
+    _, cache = model.run_with_cache(
+        tokens, names_filter=lambda n: n == f"blocks.{layer}.attn.hook_pattern"
+    )
+    pat = cache[f"blocks.{layer}.attn.hook_pattern"][0, head]  # (seq, seq)
+    str_tokens = model.to_str_tokens(tokens[0])
+    html = cv.attention.attention_pattern(tokens=str_tokens, attention=pat.cpu())
+    return str(html)
