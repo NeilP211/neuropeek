@@ -1,4 +1,4 @@
-# CircuitProbe — Design Spec
+# CircuitProbe: Design Spec
 
 **Author:** Neil Patel
 **Date:** 2026-05-20
@@ -10,7 +10,7 @@
 ## 1. Story
 
 Olsson et al. (2022, "In-context Learning and Induction Heads") identified
-*induction heads* — small attention-head circuits inside transformer language
+*induction heads*, small attention-head circuits inside transformer language
 models that implement in-context pattern matching of the form `[A][B] ... [A] → [B]`.
 The paper showed that induction-head formation coincides with a sharp phase
 transition in the in-context-learning loss curve, but did not fully map *when*
@@ -24,22 +24,22 @@ CircuitProbe:
 2. **Extends** the result by leveraging Pythia's public training checkpoints
    (~143 logged steps across training) to build the full
    **(model scale × training step) emergence map** for induction heads.
-3. **Fits a scaling law** to the emergence boundary — characterising whether
+3. **Fits a scaling law** to the emergence boundary, characterising whether
    induction heads form earlier (in steps), later, or at a consistent
    compute-equivalent point in larger models.
 4. **Ships a Triton kernel** for fused per-head prefix-matching score
-   extraction, targeting 1.5–3× speedup over PyTorch eager on a Colab T4.
+   extraction, targeting 1.5-3× speedup over PyTorch eager on a Colab T4.
 5. **Writes up** the result in LessWrong/Alignment Forum format with
    reproducible figures and code.
 
 ### Headline resume bullet (draft)
 
-> CircuitProbe — Reproduced Olsson '22 induction-head circuit on Pythia
-> 160M–1.4B (TransformerLens, activation/path patching), then mapped the full
-> emergence boundary across 3 model scales × 12 training checkpoints — fit a
+> CircuitProbe, Reproduced Olsson '22 induction-head circuit on Pythia
+> 160M-1.4B (TransformerLens, activation/path patching), then mapped the full
+> emergence boundary across 3 model scales × 12 training checkpoints, fit a
 > scaling law to induction-head formation as a joint function of scale and
 > training compute. Wrote a Triton kernel for fused prefix-matching score
-> extraction (target 1.5–3× over PyTorch eager). Writeup published on
+> extraction (target 1.5-3× over PyTorch eager). Writeup published on
 > LessWrong / personal blog.
 
 ---
@@ -66,9 +66,9 @@ CircuitProbe:
 
 - Training any model from scratch. We only use pre-trained Pythia +
   GPT-2-small weights.
-- Comparison across architectures (Mamba/SSM, RWKV) — single direction
+- Comparison across architectures (Mamba/SSM, RWKV), single direction
   (Pythia + GPT-2) keeps scope tight.
-- Refusal directions, sycophancy steering, IOI circuits — these are
+- Refusal directions, sycophancy steering, IOI circuits, these are
   alternative interpretability findings that were explicitly considered
   during brainstorming and not chosen.
 - Production deployment / serving. CircuitProbe is a research artifact.
@@ -84,7 +84,7 @@ CircuitProbe:
 | Prefix-matching + copying scores on Pythia-410M's top induction heads | Within ~10% of Olsson '22's reported values              |
 | Emergence-grid cells completed                                 | 36 (3 sizes × 12 ckpts) with 95% bootstrap CIs           |
 | Triton kernel correctness                                      | `atol=1e-5` vs PyTorch reference                         |
-| Triton kernel speedup on Colab T4                              | ≥1.5× over PyTorch eager (target band 1.5–3×)            |
+| Triton kernel speedup on Colab T4                              | ≥1.5× over PyTorch eager (target band 1.5-3×)            |
 | Scaling-law fit                                                | Functional form fit + R² + 95% bootstrap CIs reported    |
 | Reproducibility                                                | `make reproduce` regenerates headline figures            |
 
@@ -156,7 +156,7 @@ AUC=0.99 leak" honesty posture).
 - **Env:** [uv](https://github.com/astral-sh/uv)
 - **Models / probing:** [TransformerLens](https://github.com/neelnanda-io/TransformerLens),
   PyTorch (MPS for Mac, CUDA on Colab)
-- **Custom kernel:** [Triton](https://github.com/triton-lang/triton) — single
+- **Custom kernel:** [Triton](https://github.com/triton-lang/triton), single
   fused kernel, gated on `torch.cuda.is_available()` with PyTorch fallback
 - **Visualization:** [Plotly](https://plotly.com/python/) for emergence
   heatmaps + scaling-law figures;
@@ -211,23 +211,23 @@ AUC=0.99 leak" honesty posture).
 
 ### 4.4 Module boundaries (interfaces, one-line contracts)
 
-- `models.py` — `load_pythia(size: str, step: int | None) -> HookedTransformer`
-- `checkpoints.py` — `pythia_steps() -> list[int]`; `cache_root() -> Path`
-- `data.py` — `random_repeat_seqs(vocab_size, seq_len, n_seqs, seed) -> Tensor`;
+- `models.py`: `load_pythia(size: str, step: int | None) -> HookedTransformer`
+- `checkpoints.py`: `pythia_steps() -> list[int]`; `cache_root() -> Path`
+- `data.py`: `random_repeat_seqs(vocab_size, seq_len, n_seqs, seed) -> Tensor`;
   `pile_sample(n_seqs, seed) -> list[str]`
-- `induction.py` — `prefix_match_score(model, seqs) -> Tensor[layers, heads]`;
+- `induction.py`: `prefix_match_score(model, seqs) -> Tensor[layers, heads]`;
   `copying_score(model, seqs) -> Tensor[layers, heads]`;
   `rank_induction_heads(scores) -> list[(layer, head, score)]`
-- `patching.py` — `path_patch(model, clean, corrupt, sender, receiver) -> Tensor`;
+- `patching.py`: `path_patch(model, clean, corrupt, sender, receiver) -> Tensor`;
   `head_ablate(model, head_set) -> ContextManager`
-- `faithfulness.py` — `circuit_faithfulness(model, circuit, task) -> float`
-- `emergence.py` — `run_cell(size, step, n_seqs, seed) -> CellResult`;
+- `faithfulness.py`: `circuit_faithfulness(model, circuit, task) -> float`
+- `emergence.py`: `run_cell(size, step, n_seqs, seed) -> CellResult`;
   `run_grid(sizes, steps, n_seqs, seed) -> Iterator[CellResult]`
-- `scaling.py` — `fit_emergence_law(grid) -> ScalingLawFit` (carries bootstrap CIs)
-- `kernels/prefix_match_triton.py` — `prefix_match_kernel(attn: Tensor, idx: Tensor) -> Tensor`
-- `kernels/prefix_match_torch.py` — same signature, reference implementation
-- `tracking.py` — thin `init_run(...)` + `log(...)` that no-ops gracefully offline
-- `viz/*` — pure functions: `(data) -> Figure`
+- `scaling.py`: `fit_emergence_law(grid) -> ScalingLawFit` (carries bootstrap CIs)
+- `kernels/prefix_match_triton.py`: `prefix_match_kernel(attn: Tensor, idx: Tensor) -> Tensor`
+- `kernels/prefix_match_torch.py`: same signature, reference implementation
+- `tracking.py`: thin `init_run(...)` + `log(...)` that no-ops gracefully offline
+- `viz/*`: pure functions: `(data) -> Figure`
 
 Each module is independently testable and has a small surface.
 
@@ -250,7 +250,7 @@ Each module is independently testable and has a small surface.
 | P10   | Writeup                       | `docs/writeup.md` LessWrong-style with embedded figures; `METHODOLOGY.md`; reproducibility check   |
 | P11   | Polish & verify               | all tests pass, ruff clean, CI green, README hero section finalised, `make reproduce` works        |
 
-**Cadence:** for each phase, the agent will explain the phase in 3–5 bullets,
+**Cadence:** for each phase, the agent will explain the phase in 3-5 bullets,
 wait for Neil's "go ahead", build, run the test suite, commit + push, then
 move on. Matches the Exfil / FitGraph cadence.
 
@@ -261,8 +261,8 @@ move on. Matches the Exfil / FitGraph cadence.
 - **Pythia checkpoints cache:** ~70 GB total for 12 steps × 3 sizes
   (160M ≈ 6 GB, 410M ≈ 16 GB, 1.4B ≈ 50 GB). Cached under `~/.cache/circuitprobe/`
   with explicit manifests.
-- **Emergence-grid wall time** on M-series: each cell 2–10 min depending on
-  size; 36 cells ≈ 3–4 hours total. Safe to run overnight.
+- **Emergence-grid wall time** on M-series: each cell 2-10 min depending on
+  size; 36 cells ≈ 3-4 hours total. Safe to run overnight.
 - **CI runtime budget:** under 5 min, CPU-only, smallest model.
 - **Triton benchmark:** one-shot Colab T4 notebook, ~5 minutes.
 

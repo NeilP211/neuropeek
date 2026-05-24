@@ -67,7 +67,7 @@ ruff.toml
 
 ---
 
-# Phase 0 — Scaffolding
+# Phase 0: Scaffolding
 
 ## Task 0.1: Initialise uv + pyproject.toml
 
@@ -311,7 +311,7 @@ git commit -m "P0: GitHub Actions CI (lint + fast tests)"
 git push
 ```
 
-- [ ] **Step 3:** Verify CI runs on GitHub. Expected: workflow shows on Actions tab; first run may fail because no tests exist yet — that's fine, we'll add one in Task 0.4.
+- [ ] **Step 3:** Verify CI runs on GitHub. Expected: workflow shows on Actions tab; first run may fail because no tests exist yet, that's fine, we'll add one in Task 0.4.
 
 ## Task 0.4: First test (sanity)
 
@@ -352,7 +352,7 @@ git push
 
 ---
 
-# Phase 1 — Model + Checkpoint Loaders
+# Phase 1: Model + Checkpoint Loaders
 
 ## Task 1.1: Checkpoint enumeration
 
@@ -424,10 +424,10 @@ Pythia (EleutherAI) ships dense training checkpoints. The published HF
 revisions follow `step{N}` where N ranges over a log-spaced set of training
 steps plus every 1000 steps from 1000..143000. We expose:
 
-- `pythia_log_steps()`        — the full set of log-spaced + final checkpoints
-- `select_emergence_steps(n)` — pick n log-spaced steps spanning the run
-- `revision_for_step(step)`   — HF revision string
-- `cache_root()`              — local checkpoint cache directory
+- `pythia_log_steps()`       , the full set of log-spaced + final checkpoints
+- `select_emergence_steps(n)`: pick n log-spaced steps spanning the run
+- `revision_for_step(step)`  , HF revision string
+- `cache_root()`             , local checkpoint cache directory
 """
 
 from __future__ import annotations
@@ -651,7 +651,7 @@ git push
 
 ---
 
-# Phase 2 — Probe Data
+# Phase 2: Probe Data
 
 ## Task 2.1: Random-repeat sequences
 
@@ -810,7 +810,7 @@ git push
 
 ---
 
-# Phase 3 — Induction-Head Identification
+# Phase 3: Induction-Head Identification
 
 ## Task 3.1: Prefix-matching score
 
@@ -918,7 +918,7 @@ def prefix_match_score_from_pattern(
     pattern: (batch, n_heads, seq_len, seq_len) where seq_len == 2*half_len
              (assumes NO BOS token; if BOS used, strip it before calling).
 
-    Returns: (batch, n_heads) — mean attention from query position q in the
+    Returns: (batch, n_heads), mean attention from query position q in the
              second half (q >= half_len) to key position q - half_len + 1.
     """
     batch, n_heads, seq_len, _ = pattern.shape
@@ -983,7 +983,7 @@ def copying_score(model: HookedTransformer) -> torch.Tensor:
     """Per-(layer, head) copying score.
 
     Defined as the fraction of the diagonal of (W_E @ W_OV @ W_U) that is
-    positive (Olsson '22, appendix B.2). This is a model-only computation —
+    positive (Olsson '22, appendix B.2). This is a model-only computation -
     no data required.
 
     Returns: (n_layers, n_heads) tensor on CPU.
@@ -1112,7 +1112,7 @@ git push
 
 ---
 
-# Phase 4 — Olsson Baseline Reproduction
+# Phase 4: Olsson Baseline Reproduction
 
 ## Task 4.1: In-context-learning loss-by-position
 
@@ -1169,7 +1169,7 @@ Expected: import error.
 
 The diagnostic plot from Olsson '22 figure 1: average per-token loss as a
 function of position in the sequence. As context accumulates, well-trained
-models develop a sharp drop in loss at certain positions — interpreted as
+models develop a sharp drop in loss at certain positions, interpreted as
 in-context-learning kicking in. We reproduce this curve.
 """
 
@@ -1185,10 +1185,10 @@ from . import data
 def loss_by_position(logits: torch.Tensor, tokens: torch.Tensor) -> torch.Tensor:
     """Per-position cross-entropy loss averaged over the batch.
 
-    logits: (batch, seq, vocab) — predictions for positions 0..seq-1.
-    tokens: (batch, seq)        — the actual tokens.
+    logits: (batch, seq, vocab), predictions for positions 0..seq-1.
+    tokens: (batch, seq)       , the actual tokens.
 
-    Returns (seq - 1,) — mean CE loss at each predicted position (1..seq-1).
+    Returns (seq - 1,), mean CE loss at each predicted position (1..seq-1).
     """
     log_probs = F.log_softmax(logits[:, :-1, :], dim=-1)  # (batch, seq-1, vocab)
     targets = tokens[:, 1:]  # (batch, seq-1)
@@ -1268,7 +1268,7 @@ def main() -> None:
     positions = list(range(1, len(curve) + 1))
     fig.add_trace(go.Scatter(x=positions, y=curve.tolist(), mode="lines"))
     fig.update_layout(
-        title="ICL loss-by-position — Pythia-410M",
+        title="ICL loss-by-position, Pythia-410M",
         xaxis_title="Token position",
         yaxis_title="Mean cross-entropy loss",
         xaxis_type="log",
@@ -1307,7 +1307,7 @@ git push
 
 ---
 
-# Phase 5 — Patching + Faithfulness
+# Phase 5: Patching + Faithfulness
 
 ## Task 5.1: Head ablation context manager + activation patching
 
@@ -1315,7 +1315,7 @@ git push
 - Create: `src/circuitprobe/patching.py`
 - Create: `tests/test_patching.py`
 
-- [ ] **Step 1:** Write the failing test (with a real but tiny model — GPT-2-small):
+- [ ] **Step 1:** Write the failing test (with a real but tiny model, GPT-2-small):
 
 ```python
 """Tests for patching + ablation. Uses GPT-2-small for speed."""
@@ -1379,10 +1379,10 @@ Expected: import error.
 
 We expose two primary primitives:
 
-- `ablate_heads(model, heads, mode="zero")` — context manager that registers
+- `ablate_heads(model, heads, mode="zero")`, context manager that registers
   forward hooks zeroing (or mean-ablating) the `z` output of specified heads.
   Cleans up on exit.
-- `path_patch(model, clean_tokens, corrupt_tokens, sender, receiver)` — runs
+- `path_patch(model, clean_tokens, corrupt_tokens, sender, receiver)`, runs
   the model on clean tokens, caches the sender activation, then runs on
   corrupt tokens replacing the sender's activation with the cached clean
   value, and returns the receiver activation under that patch.
@@ -1554,7 +1554,7 @@ Intuition: if our proposed circuit fully captures the behaviour, ablating
 non-circuit components shouldn't matter (L_others ≈ L_full) → faithfulness ≈ 0.
 
 NOTE: we use the *complement*-style definition used by Wang et al. 2022 and
-Conmy et al. 2023 — faithfulness near 0 means "circuit suffices"; near 1
+Conmy et al. 2023, faithfulness near 0 means "circuit suffices"; near 1
 means "circuit insufficient". (Some authors invert this; we follow the
 Conmy convention.)
 
@@ -1647,7 +1647,7 @@ git push
 
 ---
 
-# Phase 6 — Triton Kernel
+# Phase 6: Triton Kernel
 
 ## Task 6.1: PyTorch reference impl + benchmark harness
 
@@ -1817,9 +1817,9 @@ if _HAVE_TRITON:
     def _prefix_match_kernel(
         pattern_ptr,      # *fp16/fp32, shape (B*H, S*S)
         out_ptr,          # *fp32, shape (B*H,)
-        n_q,              # int — number of q positions to average over
-        half_len,         # int — sequence half length
-        S,                # int — full seq_len (= 2*half_len)
+        n_q,              # int, number of q positions to average over
+        half_len,         # int, sequence half length
+        S,                # int, full seq_len (= 2*half_len)
         BLOCK_Q: tl.constexpr,
     ):
         bh_id = tl.program_id(0)
@@ -1983,7 +1983,7 @@ git push
 
 ---
 
-# Phase 7 — Emergence Grid
+# Phase 7: Emergence Grid
 
 ## Task 7.1: Tracking wrapper
 
@@ -2345,7 +2345,7 @@ git push
 
 ---
 
-# Phase 8 — Scaling-Law Analysis
+# Phase 8: Scaling-Law Analysis
 
 ## Task 8.1: Bootstrap CI + scaling-law fit
 
@@ -2372,7 +2372,7 @@ def test_bootstrap_ci_returns_expected_shape():
 
 
 def test_emergence_threshold_step_finds_first_crossing():
-    # Curve: 0.0 0.1 0.2 0.4 0.6 — threshold 0.3 first crossed at index 3.
+    # Curve: 0.0 0.1 0.2 0.4 0.6: threshold 0.3 first crossed at index 3.
     steps = [0, 100, 1000, 10_000, 100_000]
     values = [0.0, 0.1, 0.2, 0.4, 0.6]
     idx = scaling.emergence_threshold_step(steps, values, threshold=0.3)
@@ -2554,7 +2554,7 @@ git push
 
 ---
 
-# Phase 9 — Visualization
+# Phase 9: Visualization
 
 ## Task 9.1: Emergence-grid heatmap + scaling-law figure
 
@@ -2571,8 +2571,8 @@ git push
 """Plotly figures for the emergence grid + scaling-law fit.
 
 Produces:
-- `emergence_heatmap(df)`  — 2D heatmap of max prefix-match over (size, step).
-- `scaling_law_figure(fit)` — log-log scatter of emergence step vs model
+- `emergence_heatmap(df)` , 2D heatmap of max prefix-match over (size, step).
+- `scaling_law_figure(fit)`: log-log scatter of emergence step vs model
   params with the fitted power-law overlay.
 """
 
@@ -2724,7 +2724,7 @@ def induction_head_attention_html(
     seed: int = 0,
 ) -> str:
     """Return an HTML snippet visualising the (layer, head) attention pattern
-    on a random-repeat sequence — the canonical induction-head figure.
+    on a random-repeat sequence, the canonical induction-head figure.
     """
     bos = model.tokenizer.bos_token_id if model.tokenizer is not None else None
     seqs = random_repeat_seqs(
@@ -2744,7 +2744,7 @@ def induction_head_attention_html(
 
 - [ ] **Step 2:** Create `notebooks/02_emergence_grid.ipynb` (one cell + a few markdown notes) that loads `results/emergence_grid.parquet`, renders the heatmap inline, and saves an HTML of a canonical induction head's attention via the function above.
 
-(The notebook can be a minimal stub — the figure-generation logic lives in `scripts/make_figures.py`; the notebook is for recruiter-friendly inline viewing on GitHub.)
+(The notebook can be a minimal stub, the figure-generation logic lives in `scripts/make_figures.py`; the notebook is for recruiter-friendly inline viewing on GitHub.)
 
 - [ ] **Step 3:** Commit:
 
@@ -2756,7 +2756,7 @@ git push
 
 ---
 
-# Phase 10 — Writeup
+# Phase 10: Writeup
 
 ## Task 10.1: METHODOLOGY.md
 
@@ -2789,15 +2789,15 @@ git push
 - Create: `docs/writeup.md`
 
 - [ ] **Step 1:** Write the post with these sections:
-  - **TL;DR** — one paragraph: what was reproduced, what was extended, headline number
-  - **Background** — induction heads in one paragraph (citing Olsson '22)
-  - **Reproduction** — Pythia-410M numbers vs the paper
-  - **The (size × step) emergence grid** — the heatmap, with interpretation
-  - **Scaling law** — the fit, its CI, and the interpretation
-  - **Triton kernel** — what was fused, the benchmark number
-  - **Limitations** — what we didn't check; what would falsify the headline
-  - **Reproducing this** — clone, `uv sync`, `make reproduce`
-  - **Acknowledgements** — Olsson et al., EleutherAI for Pythia, TransformerLens
+  - **TL;DR**: one paragraph: what was reproduced, what was extended, headline number
+  - **Background**: induction heads in one paragraph (citing Olsson '22)
+  - **Reproduction**: Pythia-410M numbers vs the paper
+  - **The (size × step) emergence grid**, the heatmap, with interpretation
+  - **Scaling law**, the fit, its CI, and the interpretation
+  - **Triton kernel**, what was fused, the benchmark number
+  - **Limitations**: what we didn't check; what would falsify the headline
+  - **Reproducing this**, clone, `uv sync`, `make reproduce`
+  - **Acknowledgements**: Olsson et al., EleutherAI for Pythia, TransformerLens
 
   All numbers must be filled in from `results/`. Embed figures via `![](figures/...)` paths.
 
@@ -2813,7 +2813,7 @@ git push
 
 ---
 
-# Phase 11 — Polish & Verify
+# Phase 11: Polish & Verify
 
 ## Task 11.1: Lint + full test pass
 
@@ -2885,7 +2885,7 @@ git push
 - [ ] **Step 1:** Tag v0.1.0:
 
 ```bash
-git tag -a v0.1.0 -m "CircuitProbe v0.1.0 — reproduction + emergence grid + Triton kernel"
+git tag -a v0.1.0 -m "CircuitProbe v0.1.0, reproduction + emergence grid + Triton kernel"
 git push origin v0.1.0
 ```
 
@@ -2900,9 +2900,9 @@ git push origin v0.1.0
 | §3 Headline finding targets | P3 (identification) + P4 (Olsson baseline) + P7 (grid) + P8 (scaling fit) |
 | §4.1 Repo layout | P0 (scaffolding) + every subsequent phase adds modules |
 | §4.2 Tech stack locked | P0 `pyproject.toml` |
-| §4.3 Data flow | P1–P9 each implement one box in the diagram |
-| §4.4 Module boundaries | One module per task in P1–P9 |
-| §5 Phase plan | This document, P0–P11 |
+| §4.3 Data flow | P1-P9 each implement one box in the diagram |
+| §4.4 Module boundaries | One module per task in P1-P9 |
+| §5 Phase plan | This document, P0-P11 |
 | §6 Disk + time budget | P1 caching + P7 grid runtime |
 | §7 Risks | P1 Task 1.2 (revision pinning), P3 (seed control), P6 (kernel fallback), P10 (honest negative writeup) |
 | §8 Honesty stance | P0 conftest seeding + P7 wandb logging + P8 bootstrap CIs + P10 writeup limitations |
