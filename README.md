@@ -49,7 +49,7 @@ methodology in [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md).
 
 ```bash
 uv sync --extra dev
-make test                                   # full pytest suite (33+ tests)
+make test                                   # full pytest suite (41 tests)
 make lint                                   # ruff check
 uv run python scripts/identify_pythia_160m.py    # P3, top induction heads on Pythia-160M
 uv run python scripts/reproduce_olsson.py        # P4, ICL loss-by-position curve on Pythia-410M
@@ -62,6 +62,13 @@ The Triton kernel benchmark requires CUDA. Open
 
 ## Interactive demo
 
+![NeuroPeek demo](docs/assets/demo.gif)
+
+*`"...Mr and Mrs Dursley... Mr and Mrs"` → induction head **L4H6** attends from
+each repeated token back to whatever followed it the first time, and the model
+completes the pattern: top next-token **`' D'` at 37.1%** ("Dursley"). Drag the
+**Head** slider off 6 and the stripe vanishes — proof it's that one specific head.*
+
 ```bash
 make demo        # or: uv run --extra demo python app/demo.py
 ```
@@ -72,6 +79,21 @@ earlier occurrence, then see the model complete the pattern. A second tab
 shows the emergence map. Loads Pythia-160M locally, no GPU or account needed.
 The attention figure is drawn by CircuitsVis from a CDN, so that panel needs
 internet access (it renders inside an iframe so its script can run under Gradio).
+
+<details>
+<summary>More stills</summary>
+
+**The "Watch the head fire" tab — prediction firing on the repeated phrase:**
+
+![Demo overview](docs/assets/demo_overview.png)
+
+**The induction stripe up close** — each repeated token (`Mr`/`and`/`Mrs`, rows
+14–16) attends back to the token that followed its first occurrence
+(`and`/`Mrs`/`D`): the circuit predicting the repeat.
+
+![Induction stripe](docs/assets/demo_attention.png)
+
+</details>
 
 ## What's in here
 
@@ -90,7 +112,7 @@ internet access (it renders inside an iframe so its script can run under Gradio)
 | `src/neuropeek/viz/` | Plotly emergence heatmap + scaling-law figure + CircuitsVis attention |
 | `src/neuropeek/tracking.py` | wandb wrapper with offline fallback |
 | `scripts/` | Runnable drivers for each phase |
-| `tests/` | 33+ unit tests, CPU-only, runs in CI |
+| `tests/` | 41 unit tests, CPU-only, runs in CI |
 | `docs/writeup.md` | LessWrong-style writeup |
 | `docs/METHODOLOGY.md` | Exact protocols, definitions, and reproducibility checklist |
 
