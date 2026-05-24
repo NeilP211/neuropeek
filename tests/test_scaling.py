@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from circuitprobe import scaling
+from neuropeek import scaling
 
 
 def test_bootstrap_ci_returns_expected_shape():

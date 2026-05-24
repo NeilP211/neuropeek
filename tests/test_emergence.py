@@ -4,7 +4,7 @@ from dataclasses import asdict
 
 import torch
 
-from circuitprobe import emergence
+from neuropeek import emergence
 
 
 def test_cell_result_is_serialisable():

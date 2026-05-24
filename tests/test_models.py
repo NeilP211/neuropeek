@@ -6,7 +6,7 @@ We test the size→hf-id mapping and validation on CPU without downloading.
 
 import pytest
 
-from circuitprobe import models
+from neuropeek import models
 
 
 def test_pythia_size_to_hf_id_known():

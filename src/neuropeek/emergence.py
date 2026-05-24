@@ -146,7 +146,7 @@ def run_grid(
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     tracking.init_run(
-        project="circuitprobe",
+        project="neuropeek",
         name="emergence_grid",
         config={
             "sizes": sizes,

@@ -1,4 +1,4 @@
-"""Run the (model_size x training_step) emergence grid for CircuitProbe.
+"""Run the (model_size x training_step) emergence grid for NeuroPeek.
 
 Output: results/emergence_grid.jsonl  (one cell per line, appended live)
         results/emergence_grid.parquet (consolidated at end)
@@ -18,7 +18,7 @@ from pathlib import Path
 
 import torch
 
-from circuitprobe import checkpoints, emergence
+from neuropeek import checkpoints, emergence
 
 
 def main() -> None:

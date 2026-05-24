@@ -1,11 +1,11 @@
 """Smoke test: package importable and version accessible."""
 
-import circuitprobe
+import neuropeek
 
 
 def test_package_version():
-    assert circuitprobe.__version__ == "0.1.0"
+    assert neuropeek.__version__ == "0.1.0"
 
 
 def test_package_exposes_version_attribute():
-    assert hasattr(circuitprobe, "__version__")
+    assert hasattr(neuropeek, "__version__")

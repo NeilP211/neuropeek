@@ -1,6 +1,6 @@
-# CircuitProbe: Methodology
+# NeuroPeek: Methodology
 
-> Companion to the [writeup](writeup.md) and the [design spec](superpowers/specs/2026-05-20-circuitprobe-design.md). This document captures the exact protocols so the result is reproducible.
+> Companion to the [writeup](writeup.md) and the [design spec](superpowers/specs/2026-05-20-neuropeek-design.md). This document captures the exact protocols so the result is reproducible.
 
 ## 1. Models
 
@@ -14,33 +14,33 @@
 ### Random-repeat sequences (induction-head identification)
 - Sequence layout: `[r_1 r_2 ... r_N | r_1 r_2 ... r_N]` where r_i are tokens sampled uniformly from `[0, d_vocab)` with a fixed `torch.Generator` seed.
 - Default: `half_len = 50`, `n_seqs = 64`, `seed = 0`. Total length 2N (plus optional BOS).
-- Defined in `src/circuitprobe/data.py::random_repeat_seqs`.
+- Defined in `src/neuropeek/data.py::random_repeat_seqs`.
 
 ### Pile sample (in-context-learning loss curves)
 - `monology/pile-uncopyrighted`, streaming load, deterministic skip-based subsample with `random.Random(seed)`.
 - Filter to entries with `len(text) >= 200` characters to avoid trivial sequences. Pre-truncate at `max_len * 8` characters as a rough char-to-token bound.
-- Defined in `src/circuitprobe/data.py::pile_sample`.
+- Defined in `src/neuropeek/data.py::pile_sample`.
 
 ## 3. Metrics
 
 ### Prefix-matching score (per head)
 For a random-repeat sequence of total length 2N, compute the attention pattern for each (layer, head). The prefix-matching score is the mean attention from query position q (q ≥ N) to key position q − N + 1, averaged over the second half and over the batch.
 
-Implementation: `src/circuitprobe/induction.py::prefix_match_score`. BOS, if present, is stripped from the pattern tensor before scoring.
+Implementation: `src/neuropeek/induction.py::prefix_match_score`. BOS, if present, is stripped from the pattern tensor before scoring.
 
 ### Copying score (per head)
 Defined as the fraction of the diagonal of `W_E @ W_OV @ W_U` that is strictly positive (Olsson et al. 2022, appendix B.2). Pure model-only computation; no data required.
 
 Note: we never materialise the full `(d_vocab, d_vocab)` product (≈10 GiB for Pythia). The diagonal is computed elementwise via `(W_E @ W_OV) * W_U.T` then row-sum, with a peak memory of ~150 MB.
 
-Implementation: `src/circuitprobe/induction.py::copying_score`.
+Implementation: `src/neuropeek/induction.py::copying_score`.
 
 ### In-context-learning loss-by-position
 Per-position cross-entropy loss averaged over the batch:
 ```
 loss[t] = mean_b CE(softmax(logits[b, t, :]), tokens[b, t+1])  for t in 0..seq_len-2
 ```
-Implementation: `src/circuitprobe/icl.py::loss_by_position`.
+Implementation: `src/neuropeek/icl.py::loss_by_position`.
 
 ## 4. Checkpoint selection (emergence grid)
 
@@ -66,7 +66,7 @@ Implementation: `src/circuitprobe/icl.py::loss_by_position`.
 - Power law fit: `y = a · N^b`, where `N` is model parameter count and `y` is the emergence step.
 - Log-log linear regression via `np.polyfit`.
 - 95% bootstrap CI on the exponent `b` via paired (N, emergence_step) resampling, 500 bootstrap iterations.
-- Implementation: `src/circuitprobe/scaling.py::fit_emergence_law`.
+- Implementation: `src/neuropeek/scaling.py::fit_emergence_law`.
 
 ## 8. Triton kernel benchmark
 

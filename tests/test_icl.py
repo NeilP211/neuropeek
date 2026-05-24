@@ -2,7 +2,7 @@
 
 import torch
 
-from circuitprobe import icl
+from neuropeek import icl
 
 
 def test_loss_by_position_shape():

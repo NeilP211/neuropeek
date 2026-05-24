@@ -1,4 +1,4 @@
-# CircuitProbe
+# NeuroPeek
 
 Mechanistic interpretability on small language models, reproducing
 induction heads (Olsson et al., 2022) on Pythia, then mapping their
@@ -9,8 +9,8 @@ public training checkpoints.
 > **scale-invariant in training-step terms**, all three Pythia sizes
 > (160M / 410M / 1.4B) cross the `max prefix-match ≥ 0.3` threshold at
 > training step 1000.
-> Spec: [`docs/superpowers/specs/2026-05-20-circuitprobe-design.md`](docs/superpowers/specs/2026-05-20-circuitprobe-design.md).
-> Plan: [`docs/superpowers/plans/2026-05-20-circuitprobe.md`](docs/superpowers/plans/2026-05-20-circuitprobe.md).
+> Spec: [`docs/superpowers/specs/2026-05-20-neuropeek-design.md`](docs/superpowers/specs/2026-05-20-neuropeek-design.md).
+> Plan: [`docs/superpowers/plans/2026-05-20-neuropeek.md`](docs/superpowers/plans/2026-05-20-neuropeek.md).
 > Writeup: [`docs/writeup.md`](docs/writeup.md).
 
 ![Induction-head emergence map](results/figures/emergence_heatmap.png)
@@ -29,7 +29,7 @@ characteristic drop between positions ~5 and ~50, Olsson '22 figure 1
 qualitatively reproduced.
 
 **Extension.** Pythia is the only major model family that ships training
-checkpoints across its full training run. CircuitProbe sweeps a 3-size ×
+checkpoints across its full training run. NeuroPeek sweeps a 3-size ×
 12-checkpoint emergence grid (36 cells), with per-cell prefix-match scoring
 plus cache-cleanup-between-cells (peak disk ~6 GB instead of ~70 GB).
 A power law fit to the emergence step vs model parameters gives exponent
@@ -77,18 +77,18 @@ internet access (it renders inside an iframe so its script can run under Gradio)
 
 | Path | What it is |
 |---|---|
-| `src/circuitprobe/models.py` | TransformerLens loaders for Pythia 160M/410M/1.4B + GPT-2 small |
-| `src/circuitprobe/checkpoints.py` | Pythia checkpoint enumeration + emergence-step selector |
-| `src/circuitprobe/data.py` | Random-repeat sequences + Pile sample |
-| `src/circuitprobe/induction.py` | Prefix-matching score, copying score, head ranking |
-| `src/circuitprobe/icl.py` | In-context-learning loss-by-position |
-| `src/circuitprobe/patching.py` | Activation patching + head-ablation context manager |
-| `src/circuitprobe/faithfulness.py` | Circuit faithfulness / recovery metrics |
-| `src/circuitprobe/kernels/` | PyTorch reference + Triton kernel + backend selector |
-| `src/circuitprobe/emergence.py` | The (size × step) grid runner with cache-cleanup-between-cells |
-| `src/circuitprobe/scaling.py` | Power-law fit + bootstrap CIs |
-| `src/circuitprobe/viz/` | Plotly emergence heatmap + scaling-law figure + CircuitsVis attention |
-| `src/circuitprobe/tracking.py` | wandb wrapper with offline fallback |
+| `src/neuropeek/models.py` | TransformerLens loaders for Pythia 160M/410M/1.4B + GPT-2 small |
+| `src/neuropeek/checkpoints.py` | Pythia checkpoint enumeration + emergence-step selector |
+| `src/neuropeek/data.py` | Random-repeat sequences + Pile sample |
+| `src/neuropeek/induction.py` | Prefix-matching score, copying score, head ranking |
+| `src/neuropeek/icl.py` | In-context-learning loss-by-position |
+| `src/neuropeek/patching.py` | Activation patching + head-ablation context manager |
+| `src/neuropeek/faithfulness.py` | Circuit faithfulness / recovery metrics |
+| `src/neuropeek/kernels/` | PyTorch reference + Triton kernel + backend selector |
+| `src/neuropeek/emergence.py` | The (size × step) grid runner with cache-cleanup-between-cells |
+| `src/neuropeek/scaling.py` | Power-law fit + bootstrap CIs |
+| `src/neuropeek/viz/` | Plotly emergence heatmap + scaling-law figure + CircuitsVis attention |
+| `src/neuropeek/tracking.py` | wandb wrapper with offline fallback |
 | `scripts/` | Runnable drivers for each phase |
 | `tests/` | 33+ unit tests, CPU-only, runs in CI |
 | `docs/writeup.md` | LessWrong-style writeup |

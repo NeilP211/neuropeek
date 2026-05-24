@@ -625,76 +625,6 @@ wheels = [
 ]
 
 [[package]]
-name = "circuitprobe"
-version = "0.1.0"
-source = { editable = "." }
-dependencies = [
-    { name = "circuitsvis" },
-    { name = "datasets" },
-    { name = "einops" },
-    { name = "numpy" },
-    { name = "pandas" },
-    { name = "plotly" },
-    { name = "pyarrow" },
-    { name = "scipy" },
-    { name = "torch" },
-    { name = "tqdm" },
-    { name = "transformer-lens" },
-    { name = "transformers" },
-    { name = "wandb" },
-    { name = "zstandard" },
-]
-
-[package.optional-dependencies]
-demo = [
-    { name = "gradio" },
-]
-dev = [
-    { name = "ipykernel" },
-    { name = "jupyter" },
-    { name = "pytest" },
-    { name = "pytest-xdist" },
-    { name = "ruff" },
-]
-triton = [
-    { name = "triton", marker = "sys_platform == 'linux'" },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "kaleido" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "circuitsvis", specifier = ">=1.43" },
-    { name = "datasets", specifier = ">=2.18" },
-    { name = "einops", specifier = ">=0.7" },
-    { name = "gradio", marker = "extra == 'demo'", specifier = ">=6.14.0" },
-    { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=6.29" },
-    { name = "jupyter", marker = "extra == 'dev'", specifier = ">=1.0" },
-    { name = "numpy", specifier = ">=1.26" },
-    { name = "pandas", specifier = ">=2.2" },
-    { name = "plotly", specifier = ">=5.20" },
-    { name = "pyarrow", specifier = ">=15" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
-    { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3.5" },
-    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
-    { name = "scipy", specifier = ">=1.13" },
-    { name = "torch", specifier = ">=2.3" },
-    { name = "tqdm", specifier = ">=4.66" },
-    { name = "transformer-lens", specifier = ">=2.0" },
-    { name = "transformers", specifier = ">=4.40" },
-    { name = "triton", marker = "sys_platform == 'linux' and extra == 'triton'", specifier = ">=2.3" },
-    { name = "wandb", specifier = ">=0.17" },
-    { name = "zstandard", specifier = ">=0.25.0" },
-]
-provides-extras = ["dev", "triton", "demo"]
-
-[package.metadata.requires-dev]
-dev = [{ name = "kaleido", specifier = ">=1.3.0" }]
-
-[[package]]
 name = "circuitsvis"
 version = "1.43.3"
 source = { registry = "https://pypi.org/simple" }
@@ -2057,6 +1987,76 @@ sdist = { url = "https://files.pythonhosted.org/packages/6a/51/63fe664f3908c97be
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9e/c9/b2622292ea83fbb4ec318f5b9ab867d0a28ab43c5717bb85b0a5f6b3b0a4/networkx-3.6.1-py3-none-any.whl", hash = "sha256:d47fbf302e7d9cbbb9e2555a0d267983d2aa476bac30e90dfbe5669bd57f3762", size = 2068504, upload-time = "2025-12-08T17:02:38.159Z" },
 ]
+
+[[package]]
+name = "neuropeek"
+version = "0.1.0"
+source = { editable = "." }
+dependencies = [
+    { name = "circuitsvis" },
+    { name = "datasets" },
+    { name = "einops" },
+    { name = "numpy" },
+    { name = "pandas" },
+    { name = "plotly" },
+    { name = "pyarrow" },
+    { name = "scipy" },
+    { name = "torch" },
+    { name = "tqdm" },
+    { name = "transformer-lens" },
+    { name = "transformers" },
+    { name = "wandb" },
+    { name = "zstandard" },
+]
+
+[package.optional-dependencies]
+demo = [
+    { name = "gradio" },
+]
+dev = [
+    { name = "ipykernel" },
+    { name = "jupyter" },
+    { name = "pytest" },
+    { name = "pytest-xdist" },
+    { name = "ruff" },
+]
+triton = [
+    { name = "triton", marker = "sys_platform == 'linux'" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "kaleido" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "circuitsvis", specifier = ">=1.43" },
+    { name = "datasets", specifier = ">=2.18" },
+    { name = "einops", specifier = ">=0.7" },
+    { name = "gradio", marker = "extra == 'demo'", specifier = ">=6.14.0" },
+    { name = "ipykernel", marker = "extra == 'dev'", specifier = ">=6.29" },
+    { name = "jupyter", marker = "extra == 'dev'", specifier = ">=1.0" },
+    { name = "numpy", specifier = ">=1.26" },
+    { name = "pandas", specifier = ">=2.2" },
+    { name = "plotly", specifier = ">=5.20" },
+    { name = "pyarrow", specifier = ">=15" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=8.0" },
+    { name = "pytest-xdist", marker = "extra == 'dev'", specifier = ">=3.5" },
+    { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.4" },
+    { name = "scipy", specifier = ">=1.13" },
+    { name = "torch", specifier = ">=2.3" },
+    { name = "tqdm", specifier = ">=4.66" },
+    { name = "transformer-lens", specifier = ">=2.0" },
+    { name = "transformers", specifier = ">=4.40" },
+    { name = "triton", marker = "sys_platform == 'linux' and extra == 'triton'", specifier = ">=2.3" },
+    { name = "wandb", specifier = ">=0.17" },
+    { name = "zstandard", specifier = ">=0.25.0" },
+]
+provides-extras = ["dev", "triton", "demo"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "kaleido", specifier = ">=1.3.0" }]
 
 [[package]]
 name = "notebook"

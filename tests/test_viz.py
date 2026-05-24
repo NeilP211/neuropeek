@@ -3,8 +3,8 @@
 import pandas as pd
 import plotly.graph_objects as go
 
-from circuitprobe.viz import emergence_plots
-from circuitprobe.viz.attention import iframe_srcdoc
+from neuropeek.viz import emergence_plots
+from neuropeek.viz.attention import iframe_srcdoc
 
 
 def test_iframe_srcdoc_wraps_script_bearing_html():

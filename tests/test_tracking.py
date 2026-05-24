@@ -1,12 +1,12 @@
 """Tests for the wandb tracking wrapper."""
 
-from circuitprobe import tracking
+from neuropeek import tracking
 
 
 def test_init_offline_when_no_key(monkeypatch):
     monkeypatch.delenv("WANDB_API_KEY", raising=False)
     monkeypatch.setenv("WANDB_MODE", "offline")
-    run = tracking.init_run(project="circuitprobe-test", config={"foo": 1})
+    run = tracking.init_run(project="neuropeek-test", config={"foo": 1})
     assert run is not None
     tracking.log({"metric": 0.5})
     tracking.finish()

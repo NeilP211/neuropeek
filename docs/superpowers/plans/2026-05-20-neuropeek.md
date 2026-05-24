@@ -1,21 +1,21 @@
-# CircuitProbe Implementation Plan
+# NeuroPeek Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Reproduce induction-head identification (Olsson '22) on Pythia 160M / 410M / 1.4B, then map the (model scale × training step) emergence grid, fit a scaling law, ship a Triton kernel for fused prefix-match score extraction, and write up the result LessWrong-style.
 
-**Architecture:** A small Python package (`src/circuitprobe/`) wrapping TransformerLens. Modules are single-responsibility (`models.py` for loaders, `induction.py` for the scoring metrics, `patching.py` for interventions, `kernels/` for the Triton fused op, `viz/` for figures). A single emergence-grid runner (`emergence.py`) drives the (size × step) sweep and persists Parquet. A scaling-law fit module consumes that Parquet. CI runs CPU-only against the smallest model.
+**Architecture:** A small Python package (`src/neuropeek/`) wrapping TransformerLens. Modules are single-responsibility (`models.py` for loaders, `induction.py` for the scoring metrics, `patching.py` for interventions, `kernels/` for the Triton fused op, `viz/` for figures). A single emergence-grid runner (`emergence.py`) drives the (size × step) sweep and persists Parquet. A scaling-law fit module consumes that Parquet. CI runs CPU-only against the smallest model.
 
 **Tech Stack:** Python 3.11+, uv, PyTorch, TransformerLens, Triton (CUDA-only kernel + Torch fallback), Plotly, CircuitsVis, wandb, pytest, ruff, GitHub Actions.
 
-**Spec:** [`docs/superpowers/specs/2026-05-20-circuitprobe-design.md`](../specs/2026-05-20-circuitprobe-design.md)
+**Spec:** [`docs/superpowers/specs/2026-05-20-neuropeek-design.md`](../specs/2026-05-20-neuropeek-design.md)
 
 ---
 
 ## File Structure (Final State)
 
 ```
-src/circuitprobe/
+src/neuropeek/
 ├── __init__.py                     # version, public re-exports
 ├── models.py                       # load_pythia / load_gpt2 → HookedTransformer
 ├── checkpoints.py                  # PYTHIA_LOG_STEPS, cache root, revision pinning
@@ -79,7 +79,7 @@ ruff.toml
 
 ```toml
 [project]
-name = "circuitprobe"
+name = "neuropeek"
 version = "0.1.0"
 description = "Mechanistic interpretability: reproducing + extending Olsson '22 induction heads on Pythia."
 readme = "README.md"
@@ -119,7 +119,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/circuitprobe"]
+packages = ["src/neuropeek"]
 ```
 
 - [ ] **Step 2:** Create `ruff.toml`:
@@ -140,7 +140,7 @@ ignore = ["E501"]
 - [ ] **Step 3:** Run uv sync:
 
 ```bash
-cd ~/projects/circuitprobe && uv sync --extra dev
+cd ~/projects/neuropeek && uv sync --extra dev
 ```
 
 Expected: virtualenv created at `.venv/`, all deps installed, no errors.
@@ -156,15 +156,15 @@ git push
 ## Task 0.2: Source layout + Makefile
 
 **Files:**
-- Create: `src/circuitprobe/__init__.py`
+- Create: `src/neuropeek/__init__.py`
 - Create: `Makefile`
 - Create: `tests/__init__.py`
 - Create: `tests/conftest.py`
 
-- [ ] **Step 1:** Create `src/circuitprobe/__init__.py`:
+- [ ] **Step 1:** Create `src/neuropeek/__init__.py`:
 
 ```python
-"""CircuitProbe: mechanistic interpretability on small LMs."""
+"""NeuroPeek: mechanistic interpretability on small LMs."""
 
 __version__ = "0.1.0"
 ```
@@ -249,7 +249,7 @@ mkdir -p results data && touch results/.gitkeep data/.gitkeep
 - [ ] **Step 6:** Smoke-test:
 
 ```bash
-cd ~/projects/circuitprobe && uv run python -c "import circuitprobe; print(circuitprobe.__version__)"
+cd ~/projects/neuropeek && uv run python -c "import neuropeek; print(neuropeek.__version__)"
 ```
 
 Expected output: `0.1.0`
@@ -323,15 +323,15 @@ git push
 ```python
 """Smoke test: package importable and version accessible."""
 
-import circuitprobe
+import neuropeek
 
 
 def test_package_version():
-    assert circuitprobe.__version__ == "0.1.0"
+    assert neuropeek.__version__ == "0.1.0"
 
 
 def test_package_importable():
-    import circuitprobe  # noqa: F401
+    import neuropeek  # noqa: F401
 ```
 
 - [ ] **Step 2:** Run it:
@@ -357,7 +357,7 @@ git push
 ## Task 1.1: Checkpoint enumeration
 
 **Files:**
-- Create: `src/circuitprobe/checkpoints.py`
+- Create: `src/neuropeek/checkpoints.py`
 - Create: `tests/test_checkpoints.py`
 
 - [ ] **Step 1:** Write the failing test:
@@ -367,7 +367,7 @@ git push
 
 import pytest
 
-from circuitprobe import checkpoints
+from neuropeek import checkpoints
 
 
 def test_pythia_log_steps_returns_non_empty_sorted_list():
@@ -413,9 +413,9 @@ def test_cache_root_under_home():
 uv run pytest tests/test_checkpoints.py -v
 ```
 
-Expected: import error (`circuitprobe.checkpoints` does not exist).
+Expected: import error (`neuropeek.checkpoints` does not exist).
 
-- [ ] **Step 3:** Implement `src/circuitprobe/checkpoints.py`:
+- [ ] **Step 3:** Implement `src/neuropeek/checkpoints.py`:
 
 ```python
 """Pythia checkpoint enumeration and revision-pinning helpers.
@@ -483,7 +483,7 @@ def cache_root() -> Path:
     env = os.environ.get("CIRCUITPROBE_CACHE")
     if env:
         return Path(env).expanduser()
-    return Path.home() / ".cache" / "circuitprobe"
+    return Path.home() / ".cache" / "neuropeek"
 ```
 
 - [ ] **Step 4:** Run tests:
@@ -497,7 +497,7 @@ Expected: 6 passed.
 - [ ] **Step 5:** Commit:
 
 ```bash
-git add src/circuitprobe/checkpoints.py tests/test_checkpoints.py
+git add src/neuropeek/checkpoints.py tests/test_checkpoints.py
 git commit -m "P1: Pythia checkpoint enumeration + emergence-step selector"
 git push
 ```
@@ -505,7 +505,7 @@ git push
 ## Task 1.2: Model loader
 
 **Files:**
-- Create: `src/circuitprobe/models.py`
+- Create: `src/neuropeek/models.py`
 - Create: `tests/test_models.py`
 
 - [ ] **Step 1:** Write the failing test:
@@ -519,7 +519,7 @@ We test the size→hf-id mapping and validation on CPU without downloading.
 
 import pytest
 
-from circuitprobe import models
+from neuropeek import models
 
 
 def test_pythia_size_to_hf_id_known():
@@ -559,7 +559,7 @@ markers = [
 ]
 ```
 
-- [ ] **Step 4:** Implement `src/circuitprobe/models.py`:
+- [ ] **Step 4:** Implement `src/neuropeek/models.py`:
 
 ```python
 """TransformerLens model loaders for Pythia and GPT-2-small.
@@ -644,7 +644,7 @@ Expected: passes, downloads ~600 MB first time.
 - [ ] **Step 7:** Commit:
 
 ```bash
-git add src/circuitprobe/models.py tests/test_models.py pyproject.toml
+git add src/neuropeek/models.py tests/test_models.py pyproject.toml
 git commit -m "P1: Pythia + GPT-2 model loaders (TransformerLens)"
 git push
 ```
@@ -656,7 +656,7 @@ git push
 ## Task 2.1: Random-repeat sequences
 
 **Files:**
-- Create: `src/circuitprobe/data.py`
+- Create: `src/neuropeek/data.py`
 - Create: `tests/test_data.py`
 
 - [ ] **Step 1:** Write the failing test:
@@ -666,7 +666,7 @@ git push
 
 import torch
 
-from circuitprobe import data
+from neuropeek import data
 
 
 def test_random_repeat_seqs_shape():
@@ -708,7 +708,7 @@ uv run pytest tests/test_data.py -v
 
 Expected: import error.
 
-- [ ] **Step 3:** Implement `src/circuitprobe/data.py`:
+- [ ] **Step 3:** Implement `src/neuropeek/data.py`:
 
 ```python
 """Probe data generators for induction-head analysis.
@@ -803,7 +803,7 @@ Expected: 5 passed.
 - [ ] **Step 5:** Commit:
 
 ```bash
-git add src/circuitprobe/data.py tests/test_data.py
+git add src/neuropeek/data.py tests/test_data.py
 git commit -m "P2: random-repeat probe sequences + Pile sample loader"
 git push
 ```
@@ -815,7 +815,7 @@ git push
 ## Task 3.1: Prefix-matching score
 
 **Files:**
-- Create: `src/circuitprobe/induction.py`
+- Create: `src/neuropeek/induction.py`
 - Create: `tests/test_induction.py`
 
 - [ ] **Step 1:** Write the failing test:
@@ -829,7 +829,7 @@ we know which heads "should" score high. No model loading required.
 
 import torch
 
-from circuitprobe import induction
+from neuropeek import induction
 
 
 def make_synthetic_pattern(half_len: int, induction_head: bool) -> torch.Tensor:
@@ -879,7 +879,7 @@ uv run pytest tests/test_induction.py -v
 
 Expected: import error.
 
-- [ ] **Step 3:** Implement `src/circuitprobe/induction.py`:
+- [ ] **Step 3:** Implement `src/neuropeek/induction.py`:
 
 ```python
 """Induction-head identification metrics (prefix-matching + copying scores).
@@ -1030,7 +1030,7 @@ Expected: 3 passed.
 - [ ] **Step 5:** Commit:
 
 ```bash
-git add src/circuitprobe/induction.py tests/test_induction.py
+git add src/neuropeek/induction.py tests/test_induction.py
 git commit -m "P3: induction-head metrics (prefix-match + copying score + ranking)"
 git push
 ```
@@ -1055,7 +1055,7 @@ from pathlib import Path
 
 import torch
 
-from circuitprobe import induction, models
+from neuropeek import induction, models
 
 
 def main() -> None:
@@ -1117,7 +1117,7 @@ git push
 ## Task 4.1: In-context-learning loss-by-position
 
 **Files:**
-- Create: `src/circuitprobe/icl.py`
+- Create: `src/neuropeek/icl.py`
 - Create: `tests/test_icl.py`
 
 - [ ] **Step 1:** Write the failing test:
@@ -1127,7 +1127,7 @@ git push
 
 import torch
 
-from circuitprobe import icl
+from neuropeek import icl
 
 
 def test_loss_by_position_shape():
@@ -1162,7 +1162,7 @@ uv run pytest tests/test_icl.py -v
 
 Expected: import error.
 
-- [ ] **Step 3:** Implement `src/circuitprobe/icl.py`:
+- [ ] **Step 3:** Implement `src/neuropeek/icl.py`:
 
 ```python
 """In-context-learning curves: per-position cross-entropy loss.
@@ -1222,7 +1222,7 @@ Expected: 2 passed.
 - [ ] **Step 5:** Commit:
 
 ```bash
-git add src/circuitprobe/icl.py tests/test_icl.py
+git add src/neuropeek/icl.py tests/test_icl.py
 git commit -m "P4: in-context-learning loss-by-position metric"
 git push
 ```
@@ -1248,7 +1248,7 @@ from pathlib import Path
 import plotly.graph_objects as go
 import torch
 
-from circuitprobe import icl, models
+from neuropeek import icl, models
 
 
 def main() -> None:
@@ -1312,7 +1312,7 @@ git push
 ## Task 5.1: Head ablation context manager + activation patching
 
 **Files:**
-- Create: `src/circuitprobe/patching.py`
+- Create: `src/neuropeek/patching.py`
 - Create: `tests/test_patching.py`
 
 - [ ] **Step 1:** Write the failing test (with a real but tiny model, GPT-2-small):
@@ -1323,12 +1323,12 @@ git push
 import pytest
 import torch
 
-from circuitprobe import patching
+from neuropeek import patching
 
 
 @pytest.fixture(scope="module")
 def gpt2_small():
-    from circuitprobe import models
+    from neuropeek import models
     return models.load_gpt2_small(device="cpu")
 
 
@@ -1372,7 +1372,7 @@ uv run pytest tests/test_patching.py -v
 
 Expected: import error.
 
-- [ ] **Step 3:** Implement `src/circuitprobe/patching.py`:
+- [ ] **Step 3:** Implement `src/neuropeek/patching.py`:
 
 ```python
 """Activation patching, head ablation, and path patching utilities.
@@ -1488,7 +1488,7 @@ Expected: 3 passed.
 - [ ] **Step 5:** Commit:
 
 ```bash
-git add src/circuitprobe/patching.py tests/test_patching.py
+git add src/neuropeek/patching.py tests/test_patching.py
 git commit -m "P5: head ablation context mgr + path patching primitive"
 git push
 ```
@@ -1496,7 +1496,7 @@ git push
 ## Task 5.2: Circuit faithfulness metric
 
 **Files:**
-- Create: `src/circuitprobe/faithfulness.py`
+- Create: `src/neuropeek/faithfulness.py`
 - Create: `tests/test_faithfulness.py`
 
 - [ ] **Step 1:** Write the failing test:
@@ -1506,7 +1506,7 @@ git push
 
 import torch
 
-from circuitprobe import faithfulness
+from neuropeek import faithfulness
 
 
 def test_faithfulness_from_losses():
@@ -1537,7 +1537,7 @@ uv run pytest tests/test_faithfulness.py -v
 
 Expected: import error.
 
-- [ ] **Step 3:** Implement `src/circuitprobe/faithfulness.py`:
+- [ ] **Step 3:** Implement `src/neuropeek/faithfulness.py`:
 
 ```python
 """Circuit faithfulness scoring.
@@ -1640,7 +1640,7 @@ Expected: 2 passed.
 - [ ] **Step 5:** Commit:
 
 ```bash
-git add src/circuitprobe/faithfulness.py tests/test_faithfulness.py
+git add src/neuropeek/faithfulness.py tests/test_faithfulness.py
 git commit -m "P5: circuit faithfulness + prefix-match recovery"
 git push
 ```
@@ -1652,8 +1652,8 @@ git push
 ## Task 6.1: PyTorch reference impl + benchmark harness
 
 **Files:**
-- Create: `src/circuitprobe/kernels/__init__.py`
-- Create: `src/circuitprobe/kernels/prefix_match_torch.py`
+- Create: `src/neuropeek/kernels/__init__.py`
+- Create: `src/neuropeek/kernels/prefix_match_torch.py`
 - Create: `tests/test_kernels.py`
 
 - [ ] **Step 1:** Write the failing test:
@@ -1664,7 +1664,7 @@ git push
 import pytest
 import torch
 
-from circuitprobe.kernels import prefix_match_torch
+from neuropeek.kernels import prefix_match_torch
 
 
 def test_torch_backend_correct_on_synthetic():
@@ -1687,7 +1687,7 @@ def test_torch_backend_zero_pattern_gives_zero_score():
 
 def test_torch_backend_matches_induction_module_impl():
     # The kernel backend MUST agree with the reference impl in induction.py.
-    from circuitprobe.induction import prefix_match_score_from_pattern
+    from neuropeek.induction import prefix_match_score_from_pattern
     torch.manual_seed(0)
     pat = torch.rand(2, 8, 32, 32)
     a = prefix_match_score_from_pattern(pat, half_len=16)
@@ -1703,7 +1703,7 @@ uv run pytest tests/test_kernels.py -v
 
 Expected: import error.
 
-- [ ] **Step 3:** Implement `src/circuitprobe/kernels/prefix_match_torch.py`:
+- [ ] **Step 3:** Implement `src/neuropeek/kernels/prefix_match_torch.py`:
 
 ```python
 """PyTorch eager reference for the fused prefix-match score kernel.
@@ -1733,7 +1733,7 @@ def prefix_match_score(pattern: torch.Tensor, half_len: int) -> torch.Tensor:
     return gathered.mean(dim=-1)
 ```
 
-- [ ] **Step 4:** Implement `src/circuitprobe/kernels/__init__.py`:
+- [ ] **Step 4:** Implement `src/neuropeek/kernels/__init__.py`:
 
 ```python
 """Kernel-backend selector.
@@ -1770,7 +1770,7 @@ Expected: 3 passed.
 - [ ] **Step 6:** Commit:
 
 ```bash
-git add src/circuitprobe/kernels/ tests/test_kernels.py
+git add src/neuropeek/kernels/ tests/test_kernels.py
 git commit -m "P6: PyTorch reference for prefix-match score + backend selector"
 git push
 ```
@@ -1778,11 +1778,11 @@ git push
 ## Task 6.2: Triton kernel
 
 **Files:**
-- Create: `src/circuitprobe/kernels/prefix_match_triton.py`
+- Create: `src/neuropeek/kernels/prefix_match_triton.py`
 - Create: `scripts/bench_kernel.py`
 - Create: `notebooks/03_kernel_benchmark.ipynb` (Colab)
 
-- [ ] **Step 1:** Implement `src/circuitprobe/kernels/prefix_match_triton.py`:
+- [ ] **Step 1:** Implement `src/neuropeek/kernels/prefix_match_triton.py`:
 
 ```python
 """Triton kernel for fused prefix-match score extraction.
@@ -1888,7 +1888,7 @@ from pathlib import Path
 
 import torch
 
-from circuitprobe.kernels import prefix_match_torch
+from neuropeek.kernels import prefix_match_torch
 
 
 def _benchmark(fn, *args, warmup: int = 5, trials: int = 50) -> tuple[float, float]:
@@ -1911,7 +1911,7 @@ def _benchmark(fn, *args, warmup: int = 5, trials: int = 50) -> tuple[float, flo
 def main() -> None:
     if not torch.cuda.is_available():
         raise SystemExit("CUDA required for benchmarking.")
-    from circuitprobe.kernels import prefix_match_triton  # noqa: F401
+    from neuropeek.kernels import prefix_match_triton  # noqa: F401
 
     results = []
     shapes = [
@@ -1975,7 +1975,7 @@ Expected: prints speedups ≥ 1.5, no assertion error.
 - [ ] **Step 6:** Commit:
 
 ```bash
-git add src/circuitprobe/kernels/prefix_match_triton.py scripts/bench_kernel.py \
+git add src/neuropeek/kernels/prefix_match_triton.py scripts/bench_kernel.py \
         notebooks/03_kernel_benchmark.ipynb results/kernel_benchmark.json
 git commit -m "P6: Triton fused prefix-match kernel + Colab T4 benchmark"
 git push
@@ -1988,7 +1988,7 @@ git push
 ## Task 7.1: Tracking wrapper
 
 **Files:**
-- Create: `src/circuitprobe/tracking.py`
+- Create: `src/neuropeek/tracking.py`
 - Create: `tests/test_tracking.py`
 
 - [ ] **Step 1:** Write the failing test:
@@ -1998,13 +1998,13 @@ git push
 
 import os
 
-from circuitprobe import tracking
+from neuropeek import tracking
 
 
 def test_init_offline_when_no_key(monkeypatch):
     monkeypatch.delenv("WANDB_API_KEY", raising=False)
     monkeypatch.setenv("WANDB_MODE", "offline")
-    run = tracking.init_run(project="circuitprobe-test", config={"foo": 1})
+    run = tracking.init_run(project="neuropeek-test", config={"foo": 1})
     assert run is not None
     tracking.log({"metric": 0.5})
     tracking.finish()
@@ -2023,7 +2023,7 @@ uv run pytest tests/test_tracking.py -v
 
 Expected: import error.
 
-- [ ] **Step 3:** Implement `src/circuitprobe/tracking.py`:
+- [ ] **Step 3:** Implement `src/neuropeek/tracking.py`:
 
 ```python
 """Thin wandb wrapper with graceful offline fallback.
@@ -2082,7 +2082,7 @@ Expected: 2 passed.
 - [ ] **Step 5:** Commit:
 
 ```bash
-git add src/circuitprobe/tracking.py tests/test_tracking.py
+git add src/neuropeek/tracking.py tests/test_tracking.py
 git commit -m "P7: wandb tracking wrapper with offline fallback"
 git push
 ```
@@ -2090,7 +2090,7 @@ git push
 ## Task 7.2: Emergence-grid runner
 
 **Files:**
-- Create: `src/circuitprobe/emergence.py`
+- Create: `src/neuropeek/emergence.py`
 - Create: `tests/test_emergence.py`
 
 - [ ] **Step 1:** Write the failing test:
@@ -2102,7 +2102,7 @@ from dataclasses import asdict
 
 import torch
 
-from circuitprobe import emergence
+from neuropeek import emergence
 
 
 def test_cell_result_is_serialisable():
@@ -2137,7 +2137,7 @@ uv run pytest tests/test_emergence.py -v
 
 Expected: import error.
 
-- [ ] **Step 3:** Implement `src/circuitprobe/emergence.py`:
+- [ ] **Step 3:** Implement `src/neuropeek/emergence.py`:
 
 ```python
 """Emergence-grid runner.
@@ -2224,7 +2224,7 @@ def run_grid(
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
     tracking.init_run(
-        project="circuitprobe",
+        project="neuropeek",
         name="emergence_grid",
         config={
             "sizes": sizes,
@@ -2272,7 +2272,7 @@ Expected: 2 passed.
 - [ ] **Step 5:** Commit:
 
 ```bash
-git add src/circuitprobe/emergence.py tests/test_emergence.py
+git add src/neuropeek/emergence.py tests/test_emergence.py
 git commit -m "P7: emergence-grid runner (CellResult, run_cell, run_grid)"
 git push
 ```
@@ -2285,7 +2285,7 @@ git push
 - [ ] **Step 1:** Implement `scripts/run_emergence_grid.py`:
 
 ```python
-"""Run the (model_size x training_step) emergence grid for CircuitProbe.
+"""Run the (model_size x training_step) emergence grid for NeuroPeek.
 
 Output: results/emergence_grid.jsonl  (one cell per line)
         results/emergence_grid.parquet (consolidated)
@@ -2297,7 +2297,7 @@ from pathlib import Path
 
 import torch
 
-from circuitprobe import checkpoints, emergence
+from neuropeek import checkpoints, emergence
 
 
 def main() -> None:
@@ -2350,7 +2350,7 @@ git push
 ## Task 8.1: Bootstrap CI + scaling-law fit
 
 **Files:**
-- Create: `src/circuitprobe/scaling.py`
+- Create: `src/neuropeek/scaling.py`
 - Create: `tests/test_scaling.py`
 
 - [ ] **Step 1:** Write the failing test:
@@ -2360,7 +2360,7 @@ git push
 
 import numpy as np
 
-from circuitprobe import scaling
+from neuropeek import scaling
 
 
 def test_bootstrap_ci_returns_expected_shape():
@@ -2402,7 +2402,7 @@ uv run pytest tests/test_scaling.py -v
 
 Expected: import error.
 
-- [ ] **Step 3:** Implement `src/circuitprobe/scaling.py`:
+- [ ] **Step 3:** Implement `src/neuropeek/scaling.py`:
 
 ```python
 """Scaling-law fits + bootstrap confidence intervals.
@@ -2536,7 +2536,7 @@ Expected: 4 passed.
 - [ ] **Step 5:** Run on real grid + dump the fit:
 
 ```bash
-uv run python -c "from circuitprobe import scaling; import json; \
+uv run python -c "from neuropeek import scaling; import json; \
   fit = scaling.fit_emergence_law('results/emergence_grid.parquet', threshold=0.3); \
   json.dump(fit, open('results/scaling_law_fit.json', 'w'), indent=2, default=str); \
   print(json.dumps(fit, indent=2, default=str))"
@@ -2547,7 +2547,7 @@ Expected: prints the per-size emergence steps and the fitted (a, b) + 95% CI.
 - [ ] **Step 6:** Commit:
 
 ```bash
-git add src/circuitprobe/scaling.py tests/test_scaling.py results/scaling_law_fit.json
+git add src/neuropeek/scaling.py tests/test_scaling.py results/scaling_law_fit.json
 git commit -m "P8: scaling-law fit + bootstrap CI on emergence grid"
 git push
 ```
@@ -2559,13 +2559,13 @@ git push
 ## Task 9.1: Emergence-grid heatmap + scaling-law figure
 
 **Files:**
-- Create: `src/circuitprobe/viz/__init__.py`
-- Create: `src/circuitprobe/viz/emergence_plots.py`
+- Create: `src/neuropeek/viz/__init__.py`
+- Create: `src/neuropeek/viz/emergence_plots.py`
 - Create: `scripts/make_figures.py`
 
-- [ ] **Step 1:** Create `src/circuitprobe/viz/__init__.py` as empty.
+- [ ] **Step 1:** Create `src/neuropeek/viz/__init__.py` as empty.
 
-- [ ] **Step 2:** Implement `src/circuitprobe/viz/emergence_plots.py`:
+- [ ] **Step 2:** Implement `src/neuropeek/viz/emergence_plots.py`:
 
 ```python
 """Plotly figures for the emergence grid + scaling-law fit.
@@ -2654,7 +2654,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from circuitprobe.viz import emergence_plots
+from neuropeek.viz import emergence_plots
 
 
 def main() -> None:
@@ -2690,7 +2690,7 @@ Expected: 4 files in `results/figures/`.
 - [ ] **Step 5:** Commit:
 
 ```bash
-git add src/circuitprobe/viz/ scripts/make_figures.py results/figures/
+git add src/neuropeek/viz/ scripts/make_figures.py results/figures/
 git commit -m "P9: emergence heatmap + scaling-law figure (Plotly)"
 git push
 ```
@@ -2698,10 +2698,10 @@ git push
 ## Task 9.2: Attention-pattern figure via CircuitsVis
 
 **Files:**
-- Create: `src/circuitprobe/viz/attention.py`
+- Create: `src/neuropeek/viz/attention.py`
 - Create: `notebooks/02_emergence_grid.ipynb`
 
-- [ ] **Step 1:** Implement `src/circuitprobe/viz/attention.py`:
+- [ ] **Step 1:** Implement `src/neuropeek/viz/attention.py`:
 
 ```python
 """CircuitsVis wrappers for attention-pattern figures."""
@@ -2749,7 +2749,7 @@ def induction_head_attention_html(
 - [ ] **Step 3:** Commit:
 
 ```bash
-git add src/circuitprobe/viz/attention.py notebooks/02_emergence_grid.ipynb
+git add src/neuropeek/viz/attention.py notebooks/02_emergence_grid.ipynb
 git commit -m "P9: CircuitsVis attention-pattern figures + emergence-grid notebook"
 git push
 ```
@@ -2853,7 +2853,7 @@ git push
 - [ ] **Step 1:** From a clean shell, verify reproduce flow:
 
 ```bash
-cd ~/projects/circuitprobe && make reproduce
+cd ~/projects/neuropeek && make reproduce
 ```
 
 Expected: writes `results/figures/*.png` and `results/figures/*.html`
@@ -2885,7 +2885,7 @@ git push
 - [ ] **Step 1:** Tag v0.1.0:
 
 ```bash
-git tag -a v0.1.0 -m "CircuitProbe v0.1.0, reproduction + emergence grid + Triton kernel"
+git tag -a v0.1.0 -m "NeuroPeek v0.1.0, reproduction + emergence grid + Triton kernel"
 git push origin v0.1.0
 ```
 

@@ -13,7 +13,7 @@ from pathlib import Path
 
 import torch
 
-from circuitprobe import checkpoints, emergence
+from neuropeek import checkpoints, emergence
 
 
 def main() -> None:

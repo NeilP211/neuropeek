@@ -6,7 +6,7 @@ we know which heads "should" score high. No model loading required.
 
 import torch
 
-from circuitprobe import induction
+from neuropeek import induction
 
 
 def make_synthetic_pattern(half_len: int, induction_head: bool) -> torch.Tensor:

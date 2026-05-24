@@ -12,8 +12,8 @@ from pathlib import Path
 
 import pandas as pd
 
-from circuitprobe import emergence, scaling
-from circuitprobe.viz import emergence_plots
+from neuropeek import emergence, scaling
+from neuropeek.viz import emergence_plots
 
 
 def main() -> None:

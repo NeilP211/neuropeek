@@ -1,6 +1,6 @@
 """Tests for Pythia checkpoint enumeration."""
 
-from circuitprobe import checkpoints
+from neuropeek import checkpoints
 
 
 def test_pythia_log_steps_returns_non_empty_sorted_list():

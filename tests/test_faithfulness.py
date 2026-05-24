@@ -2,7 +2,7 @@
 
 import torch  # noqa: F401
 
-from circuitprobe import faithfulness
+from neuropeek import faithfulness
 
 
 def test_faithfulness_from_losses():

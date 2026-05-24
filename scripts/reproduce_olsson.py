@@ -11,7 +11,7 @@ from pathlib import Path
 import plotly.graph_objects as go
 import torch
 
-from circuitprobe import icl, models
+from neuropeek import icl, models
 
 
 def main() -> None:

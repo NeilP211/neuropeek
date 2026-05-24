@@ -12,7 +12,7 @@ from pathlib import Path
 
 import torch
 
-from circuitprobe.kernels import prefix_match_torch
+from neuropeek.kernels import prefix_match_torch
 
 
 def _benchmark(fn, *args, warmup: int = 5, trials: int = 50) -> tuple[float, float]:
@@ -35,7 +35,7 @@ def _benchmark(fn, *args, warmup: int = 5, trials: int = 50) -> tuple[float, flo
 def main() -> None:
     if not torch.cuda.is_available():
         raise SystemExit("CUDA required for benchmarking.")
-    from circuitprobe.kernels import prefix_match_triton  # noqa: F401
+    from neuropeek.kernels import prefix_match_triton  # noqa: F401
 
     results = []
     shapes = [

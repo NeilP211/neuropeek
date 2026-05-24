@@ -1,4 +1,4 @@
-# CircuitProbe: Design Spec
+# NeuroPeek: Design Spec
 
 **Author:** Neil Patel
 **Date:** 2026-05-20
@@ -17,7 +17,7 @@ transition in the in-context-learning loss curve, but did not fully map *when*
 this transition happens as a joint function of **model scale** and **training
 compute**.
 
-CircuitProbe:
+NeuroPeek:
 
 1. **Reproduces** the induction-head identification protocol on Pythia-160M,
    Pythia-410M, and Pythia-1.4B using TransformerLens.
@@ -34,7 +34,7 @@ CircuitProbe:
 
 ### Headline resume bullet (draft)
 
-> CircuitProbe, Reproduced Olsson '22 induction-head circuit on Pythia
+> NeuroPeek, Reproduced Olsson '22 induction-head circuit on Pythia
 > 160M-1.4B (TransformerLens, activation/path patching), then mapped the full
 > emergence boundary across 3 model scales × 12 training checkpoints, fit a
 > scaling law to induction-head formation as a joint function of scale and
@@ -71,7 +71,7 @@ CircuitProbe:
 - Refusal directions, sycophancy steering, IOI circuits, these are
   alternative interpretability findings that were explicitly considered
   during brainstorming and not chosen.
-- Production deployment / serving. CircuitProbe is a research artifact.
+- Production deployment / serving. NeuroPeek is a research artifact.
 - Paid cloud compute. Local M-series Mac + free Colab T4 (kernel benchmark
   only). The project ships without billing anything.
 
@@ -99,12 +99,12 @@ AUC=0.99 leak" honesty posture).
 ### 4.1 Repository layout
 
 ```
-~/projects/circuitprobe/
+~/projects/neuropeek/
 ├── README.md                       # story + headline figures + reproduce
 ├── pyproject.toml                  # uv-managed, Python 3.11+
 ├── Makefile                        # `make reproduce`, `make test`, `make bench`
 ├── ruff.toml, .gitignore, LICENSE
-├── src/circuitprobe/
+├── src/neuropeek/
 │   ├── __init__.py
 │   ├── models.py                   # TransformerLens loaders for Pythia + GPT-2
 │   ├── data.py                     # random-repeat, IOI, Pile sample probes
@@ -170,7 +170,7 @@ AUC=0.99 leak" honesty posture).
   contrasting / sanity checks only)
 - **Testing:** pytest, ruff
 - **CI:** GitHub Actions (CPU-only, smallest model, fast tests only)
-- **Repo hosting:** private GitHub repo `NeilP211/circuitprobe` (matches
+- **Repo hosting:** private GitHub repo `NeilP211/neuropeek` (matches
   Neil's preference)
 - **No cloud bills.** Triton benchmark on free Colab T4. Everything else
   on local Mac.
@@ -259,7 +259,7 @@ move on. Matches the Exfil / FitGraph cadence.
 ## 6. Disk & Time Budget
 
 - **Pythia checkpoints cache:** ~70 GB total for 12 steps × 3 sizes
-  (160M ≈ 6 GB, 410M ≈ 16 GB, 1.4B ≈ 50 GB). Cached under `~/.cache/circuitprobe/`
+  (160M ≈ 6 GB, 410M ≈ 16 GB, 1.4B ≈ 50 GB). Cached under `~/.cache/neuropeek/`
   with explicit manifests.
 - **Emergence-grid wall time** on M-series: each cell 2-10 min depending on
   size; 36 cells ≈ 3-4 hours total. Safe to run overnight.
@@ -311,7 +311,7 @@ A reasonable recruiter or interpretability researcher can:
 
 - We do **not** claim a new circuit. The circuit is Olsson's.
 - We do **not** retrain Pythia. We only consume HF checkpoints.
-- We do **not** ship a generic interpretability library. CircuitProbe is
+- We do **not** ship a generic interpretability library. NeuroPeek is
   a focused experiment, not a framework.
 - We do **not** burn money on cloud compute. Free local + free Colab T4
   only. Any paid escalation requires an explicit, unmissable "this is

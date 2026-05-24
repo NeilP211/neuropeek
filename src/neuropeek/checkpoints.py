@@ -62,4 +62,4 @@ def cache_root() -> Path:
     env = os.environ.get("CIRCUITPROBE_CACHE")
     if env:
         return Path(env).expanduser()
-    return Path.home() / ".cache" / "circuitprobe"
+    return Path.home() / ".cache" / "neuropeek"

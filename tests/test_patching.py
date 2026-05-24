@@ -3,12 +3,12 @@
 import pytest
 import torch
 
-from circuitprobe import patching
+from neuropeek import patching
 
 
 @pytest.fixture(scope="module")
 def gpt2_small():
-    from circuitprobe import models
+    from neuropeek import models
     return models.load_gpt2_small(device="cpu")
 
 

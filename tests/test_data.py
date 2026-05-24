@@ -2,7 +2,7 @@
 
 import torch
 
-from circuitprobe import data
+from neuropeek import data
 
 
 def test_random_repeat_seqs_shape():
