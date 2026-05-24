@@ -7,11 +7,45 @@ that can be embedded in notebooks or written to disk.
 
 from __future__ import annotations
 
+import html as _html
+
 import circuitsvis as cv
 import torch
 from transformer_lens import HookedTransformer
 
 from ..data import random_repeat_seqs
+
+
+def iframe_srcdoc(inner_html: str, height: int = 560) -> str:
+    """Wrap an HTML snippet in an ``<iframe srcdoc>`` so its inline scripts run.
+
+    CircuitsVis renders its attention widget via an inline module ``<script>``.
+    Hosts like Gradio's ``gr.HTML`` inject content the way ``innerHTML`` does,
+    and the browser deliberately does *not* execute ``<script>`` tags inserted
+    that way -- so the widget stays a blank, zero-height div. Embedding the
+    snippet as an iframe ``srcdoc`` makes the browser parse it as a real
+    document, so the script executes and the figure draws.
+    """
+    # The attention grid's height grows with the number of tokens, so a fixed
+    # iframe height clips longer inputs. A tiny resize script inside the (same-
+    # origin, un-sandboxed) srcdoc grows the host iframe to fit its content.
+    resize = (
+        "<script>(function(){function f(){try{var h=document.body.scrollHeight;"
+        "if(window.frameElement)window.frameElement.style.height=(h+8)+'px';}"
+        "catch(e){}}new ResizeObserver(f).observe(document.body);"
+        "window.addEventListener('load',f);})();</script>"
+    )
+    doc = (
+        "<!doctype html><html><head><meta charset='utf-8'>"
+        "<style>body{margin:0;font-family:system-ui,-apple-system,sans-serif;}</style>"
+        f"</head><body>{inner_html}{resize}</body></html>"
+    )
+    srcdoc = _html.escape(doc, quote=True)
+    return (
+        f'<iframe srcdoc="{srcdoc}" '
+        f'style="width:100%; height:{height}px; border:0;" '
+        'title="attention pattern"></iframe>'
+    )
 
 
 @torch.no_grad()

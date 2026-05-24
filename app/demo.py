@@ -20,7 +20,7 @@ import gradio as gr
 import torch
 
 from circuitprobe import models
-from circuitprobe.viz.attention import text_attention_html
+from circuitprobe.viz.attention import iframe_srcdoc, text_attention_html
 
 # The canonical induction head identified for Pythia-160M in P3.
 DEFAULT_LAYER = 4
@@ -51,8 +51,11 @@ def analyze(text: str, layer: int, head: int):
 
     model = _get_model()
 
-    # Attention pattern HTML for the chosen head.
+    # Attention pattern HTML for the chosen head. CircuitsVis renders via an
+    # inline <script>, which gr.HTML will not execute -- wrap it in an iframe
+    # srcdoc so the browser runs the script and the figure actually draws.
     attn_html = text_attention_html(model, text, layer=int(layer), head=int(head))
+    attn_html = iframe_srcdoc(attn_html, height=560)
 
     # Next-token prediction (what the model thinks comes next).
     tokens = model.to_tokens(text, prepend_bos=True)

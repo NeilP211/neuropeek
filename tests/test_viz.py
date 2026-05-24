@@ -4,6 +4,29 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from circuitprobe.viz import emergence_plots
+from circuitprobe.viz.attention import iframe_srcdoc
+
+
+def test_iframe_srcdoc_wraps_script_bearing_html():
+    # CircuitsVis output is a div plus an inline module <script>. Injected as a
+    # raw HTML string (e.g. Gradio's gr.HTML), the browser never runs the
+    # script. Wrapping in an <iframe srcdoc> makes it execute.
+    inner = (
+        '<div id="circuits-vis-x"></div>'
+        '<script type="module">import {render} from "u";render("circuits-vis-x");</script>'
+    )
+    out = iframe_srcdoc(inner, height=480)
+
+    assert out.startswith("<iframe")
+    assert "srcdoc=" in out
+    assert "height:480px" in out
+    # The only live markup is the <iframe> itself; the snippet's <script> must
+    # be escaped inside srcdoc, never a live top-level tag.
+    assert "<script" not in out
+    assert "&lt;script" in out
+    # Inner content is carried through (escaped), not dropped.
+    assert "render(" in out
+    assert "circuits-vis-x" in out
 
 
 def test_emergence_heatmap_returns_figure_with_heatmap_trace():
