@@ -39,20 +39,24 @@ HEATMAP_PNG = REPO_ROOT / "results" / "figures" / "emergence_heatmap.png"
 
 
 # --- pixel-art brain logo -------------------------------------------------
-# Hand-drawn pixel matrix. O = outline, P = fill, L = highlight.
+# Hand-drawn pixel matrix. O = outline/fold, P = fill, L = highlight.
+# Rounded blob + central fissure (the OO seam) + fold dashes + a small brain
+# stem at the bottom, so it reads as a brain rather than a heart.
 _BRAIN = [
-    "   OOO  OOO   ",
-    "  OPPPOOPPPO  ",
-    " OPPPPPPPPPPO ",
-    " OPLPPOPPLPPO ",
-    "OPPPPPPPPPPPPO",
-    "OPPOPPPPPPOPPO",
-    "OPPPPPOPPPPPPO",
-    " OPPOPPPOPPPO ",
-    " OPPPPPPPPPPO ",
-    "  OPPPPPPPPO  ",
-    "   OOPPPPOO   ",
-    "     OOOO     ",
+    "     OOOOO     ",
+    "   OOPPPPPOO   ",
+    "  OPPPPPPPPPO  ",
+    " OPOOPPOPPOOPO ",
+    " OPPPPPOPPPPPO ",
+    "OPOOPPPOPPPOOPO",
+    "OPPPPPPOPPPPPPO",
+    "OPPPOOPOPOOPPPO",
+    "OPPPPPPOPPPPPPO",
+    " OPOOPPOPPOOPO ",
+    "  OPPPPPOPPPPO ",
+    "   OOPPPPPOO   ",
+    "     OPPPO     ",
+    "      OPO      ",
 ]
 _BRAIN_COLORS = {"O": "#b3105f", "P": "#ff2e88", "L": "#ffb3d9"}
 
