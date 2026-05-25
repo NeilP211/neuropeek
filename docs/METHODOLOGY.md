@@ -1,6 +1,6 @@
 # NeuroPeek: Methodology
 
-> Companion to the [writeup](writeup.md) and the [design spec](superpowers/specs/2026-05-20-neuropeek-design.md). This document captures the exact protocols so the result is reproducible.
+> Companion to the [writeup](writeup.md). This document captures the exact protocols so the result is reproducible.
 
 ## 1. Models
 
