@@ -74,7 +74,7 @@ make demo        # or: uv run --extra demo python app/demo.py
 Launches a local Gradio app (default http://127.0.0.1:7860). Type a sentence
 with a repeated phrase and watch the induction head L4H6 attend back to the
 earlier occurrence, then see the model complete the pattern. A second tab
-shows the emergence map. Loads Pythia-160M locally, no GPU or account needed.
+shows the emergence map. Loads Pythia-160M locally.
 The attention figure is drawn by CircuitsVis from a CDN, so that panel needs
 internet access (it renders inside an iframe so its script can run under Gradio).
 
