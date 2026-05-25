@@ -9,8 +9,6 @@ public training checkpoints.
 > **scale-invariant in training-step terms**, all three Pythia sizes
 > (160M / 410M / 1.4B) cross the `max prefix-match ≥ 0.3` threshold at
 > training step 1000.
-> Spec: [`docs/superpowers/specs/2026-05-20-neuropeek-design.md`](docs/superpowers/specs/2026-05-20-neuropeek-design.md).
-> Plan: [`docs/superpowers/plans/2026-05-20-neuropeek.md`](docs/superpowers/plans/2026-05-20-neuropeek.md).
 > Writeup: [`docs/writeup.md`](docs/writeup.md).
 
 ![Induction-head emergence map](results/figures/emergence_heatmap.png)
